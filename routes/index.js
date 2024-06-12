@@ -1,10 +1,7 @@
 const express = require("express");
+const paymentRoute = require("./payment.route");
 const Router = express.Router();
 
-Router.use("/a",(req,res)=>{
-    return res.status(200).json({
-        message: "Hello"
-    })
-})
+Router.use("/payments",paymentRoute);
 
 module.exports = Router;

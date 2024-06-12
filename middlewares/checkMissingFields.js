@@ -1,6 +1,6 @@
-function checkForMissingFields(data,requiredFields) {
+function checkForMissingFields(requiredFields) {
     return (req, res, next) => {
-        const bodyKeys = Object.keys(data);
+        const bodyKeys = Object.keys(req.body);
         const missingFields = requiredFields.filter(field => !bodyKeys.includes(field));
 
         if (missingFields.length > 0) {
