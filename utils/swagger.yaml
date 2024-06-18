@@ -12,10 +12,10 @@ servers:
 schemes: [http,https]
 
 tags:
-  - seasons
-  - contestants
-  - payments
-  - admins
+  - season
+  - contestant
+  - payment
+  - admin
 
 paths:
   
