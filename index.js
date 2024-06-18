@@ -4,7 +4,6 @@ const Router = require("./routes");
 const _db = require("./config/dbConnection");
 require("dotenv").config();
 const cors = require("cors");
-const path = require("path");
 
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");

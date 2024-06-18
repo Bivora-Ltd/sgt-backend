@@ -12,40 +12,16 @@ servers:
 schemes: [http,https]
 
 tags:
-  - name: auth
-  - name: seller
-  - name: car
+  - seasons
+  - contestants
+  - payments
+  - admins
 
 paths:
   
 components:
   securitySchemes:
     BearerAuth:
-      type: http
+      type: https
       scheme: bearer
       bearerFormat: JWT
-
-  schemas:
-    User:
-      type: object
-      required:
-        - email
-        - password
-        - username
-        - fullname
-      properties:
-        username:
-          type: string
-          description: A unique username for authentication
-        password:
-          type: string
-          description: A secure password for authentication
-        email:
-          type: string
-          description: A unique email for authentication
-        fullname:
-          type: string
-          description: First and lastname of the user separated by a space
-        account_type:
-          type: string
-          description: Specifies the type of user

@@ -47,28 +47,6 @@ const generatePaymentLink = asyncHandler(async (req, res) => {
     }
 });
 
-const paymentCallback = asyncHandler(async (req, res) => {
-    if (req.query.status === 'successful') {
-        const transactionDetails = await Transaction.find({ref: req.query.tx_ref});
-        const response = await flw.Transaction.verify({id: req.query.transaction_id});
-        if (
-            response.data.status === "successful"
-            && response.data.amount === transactionDetails.amount
-            && response.data.currency === "NGN") {
-                return res.status(200).json({
-                    success: true,
-                    message: "Payment was successful"
-                })
-        } else {
-            return res.status(400).json({
-                success: false,
-                message: "Payment was not successful"
-            })
-        }
-    }
-})
-
 module.exports = {
-    generatePaymentLink,
-    paymentCallback
+    generatePaymentLink
 };

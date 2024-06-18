@@ -4,11 +4,11 @@ const seasonSchema = Mongoose.Schema(
     {
         title:{
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         current:{
             type: Boolean,
-            required: true,
             default: true
         },
         limit:{
@@ -19,22 +19,14 @@ const seasonSchema = Mongoose.Schema(
             type: Date,
             required: false,
         },
-        stages:[
-            {
-                stageId:{
-                    type: Mongoose.Schema.Types.ObjectId,
-                    ref: "Stage"
-                }
-            }
-        ],
-        contestants:[
-            {
-                contestantId:{
-                    type: Mongoose.Schema.Types.ObjectId,
-                    ref: "Contestant"
-                }
-            }
-        ]
+        status:{
+            type: String,
+            default: "audition"
+        },
+        acceptance:{
+            type: Boolean,
+            default: true
+        }
     },
     {
         timestamps: true

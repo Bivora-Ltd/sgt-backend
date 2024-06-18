@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 
 const registerAdmin = asyncHandler(
     async (req, res, next) => {
-        const { adminName, email, password } = req.body;
+        const { admin_name: adminName, email, password } = req.body;
         
         const containsSpaces = /\s/.test(adminName);
         if (containsSpaces) {
@@ -29,7 +29,7 @@ const registerAdmin = asyncHandler(
             .update(password)
             .digest('hex');
 
-        const admin = await admin.create({
+        const admin = await Admin.create({
             adminName,
             email,
             password: hashedPassword
@@ -57,7 +57,7 @@ const loginAdmin = asyncHandler(
     async (req, res, next) => {
         const { email, password } = req.body;
 
-        const admin = await admin.findOne({ email });
+        const admin = await Admin.findOne({ email });
 
         if (!admin) {
             res.status(401);

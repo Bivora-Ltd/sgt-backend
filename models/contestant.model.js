@@ -23,8 +23,7 @@ const contestantSchema = Mongoose.Schema({
     },
     email:{
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     votes:{
         type: Number,
@@ -34,9 +33,17 @@ const contestantSchema = Mongoose.Schema({
         type: Mongoose.Schema.Types.ObjectId,
         ref: "Season"
     },
-    lastStage:{
-        type: Mongoose.Schema.Types.ObjectId,
-        ref: "Stage"
+    group:{
+        type: String,
+        default: null
+    },
+    status: {
+        type: String,
+        default: "audition"
+    },
+    phoneNumber:{
+        type: String,
+        required: true
     }
 },
     {
