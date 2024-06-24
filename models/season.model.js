@@ -13,11 +13,15 @@ const seasonSchema = Mongoose.Schema(
         },
         limit:{
             type: Number,
-            required: true,
+            default: null,
         },
         applicationDeadLine:{
             type: Date,
             required: false,
+        },
+        registrationFee:{
+            type: Number,
+            required: true
         },
         status:{
             type: String,

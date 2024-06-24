@@ -3,7 +3,7 @@ const Contestant = require("../models/contestant.model");
 const asyncHandler = require("express-async-handler");
 
 const newSeason = asyncHandler(async(req,res)=>{
-    const {title,limit,application_deadline} = req.body;
+    const {title,limit,application_deadline,reg_fee:registrationFee} = req.body;
     const today = new Date();
     if(new Date(application_deadline) <= today){
         res.status(400);
@@ -12,8 +12,9 @@ const newSeason = asyncHandler(async(req,res)=>{
     const lastSeason = await Season.find().sort({_id:-1});
     const newSeason = await Season.create({
         title,
-        limit: parseInt(limit),
-        applicationDeadLine: new Date(application_deadline)
+        limit: parseInt(limit) || null,
+        applicationDeadLine: new Date(application_deadline),
+        registrationFee
     });
 
     if(!newSeason){
@@ -38,35 +39,8 @@ const currentSeason = asyncHandler(async(req,res)=>{
         success: true,
         currentSeason
     });
-})
+});
 
-const seasonContestants = asyncHandler(async(req,res)=>{
-    const {seasonTitle} = req.params;
-
-    if (seasonTitle == "current") {
-        const season = await Season.find({current:true}).sort({_id:-1});
-        const currentSeason = season[0];
-        const seasonId = currentSeason._id;
-        console.log()
-        const contestants = await Contestant.find({season:seasonId});
-
-        return res.status(200).json({
-            success: true,
-            contestants
-        });
-    }else{
-        const season = await Season.findOne({title:seasonTitle});
-        const contestants = await Contestant.find({season:season._id});
-        if(!contestants){
-            res.status(404);
-            throw new Error("No contestants found");
-        }
-        return res.status(200).json({
-            success: true,
-            contestants
-        });
-    }
-})
 
 const advanceSeason = asyncHandler(async(req,res)=>{
     let currentSeason = await Season.find({current:true}).sort({_id:-1});
@@ -178,6 +152,5 @@ const advanceSeason = asyncHandler(async(req,res)=>{
 module.exports = {
     newSeason,
     currentSeason,
-    seasonContestants,
     advanceSeason
 }
