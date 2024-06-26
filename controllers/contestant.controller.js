@@ -14,7 +14,7 @@ const contestantRegister = asyncHandler(async(req,res)=>{
     }
     const imageUrl = path.join(process.env.APP_URL,"uploads/images",req.file.filename);
     const instagramUrl = `https://www.instagram.com/${instagram}`;
-    const tiktokUrl = `https://www.tiktok.com/${tiktok}`;
+    const tiktokUrl = `https://www.tiktok.com/@${tiktok}`;
     const socials = {
         tiktok: tiktokUrl,
         instagram: instagramUrl
@@ -42,9 +42,13 @@ const contestantRegister = asyncHandler(async(req,res)=>{
         Hello ${name} Your registration request for Street Got Talent 
         ${currentSeason[0].title} has been approved your registration Id 
         is <strong>${contestant._id}</strong>. </br> 
-        Audition is live at Timesquare palace 3:00pm`;
+        See you at the Audition`;
 
-    await sendEmail(email,"Registration Successful",message);
+    const mail = await sendEmail(email,"Registration Successful",message);
+    if(!mail){
+        res.status(400);
+        throw new Error("Error sending email");
+    }
     return res.status(200).json({
         success: true,
         message: "Contestant details submitted you will receive a mail shortly",

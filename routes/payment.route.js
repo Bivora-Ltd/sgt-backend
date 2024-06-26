@@ -5,8 +5,8 @@ const checkForMissingFields = require("../middlewares/checkMissingFields");
 const paymentRoute = express.Router();
 
 paymentRoute.route("/generate_link")
-    .post(checkForMissingFields(["amount","email","callback_url"]),initializeTransaction)
+    .post(checkForMissingFields(["amount","email","callback_url","payment_for"]),initializeTransaction)
 
-paymentRoute.post("/save",checkForMissingFields(["reference","payment_for"]),recordPayment)
+paymentRoute.post("/verify",checkForMissingFields(["reference"]),recordPayment)
 
 module.exports = paymentRoute;

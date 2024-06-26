@@ -23,6 +23,16 @@ const sendEmail = async (to, subject, message) => {
       <div style="text-align: center; padding: 10px 0; border-top: 1px solid #ccc;">
         <p style="font-size: 12px; color: #777;">&copy; 2024 Street Got Talent. All rights reserved.</p>
       </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="https://www.tiktok.com/@streetsgottalent_" target="_blank" style="margin-right: 20px;">
+          <img src="https://img.icons8.com/ios-filled/50/000000/tiktok.png" alt="TikTok" style="vertical-align: middle; width: 24px; height: 24px;" />
+          <span style="font-size: 16px; color: #333; text-decoration: none; vertical-align: middle;">@streetgottalent</span>
+        </a>
+        <a href="https://www.instagram.com/streetsgottalent_/" target="_blank">
+          <img src="https://img.icons8.com/ios-filled/50/000000/instagram-new.png" alt="Instagram" style="vertical-align: middle; width: 24px; height: 24px;" />
+          <span style="font-size: 16px; color: #333; text-decoration: none; vertical-align: middle;">@streetgottalent</span>
+        </a>
+      </div>
     </div>
   `;
 
@@ -38,6 +48,7 @@ const sendEmail = async (to, subject, message) => {
     console.log('Email sent');
   } catch (error) {
     console.error('Error sending email:', error);
+    return false;
   }
 };
 

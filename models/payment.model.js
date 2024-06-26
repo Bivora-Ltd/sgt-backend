@@ -20,6 +20,11 @@ const paymentSchema = Mongoose.Schema({
     season: {
         type: Mongoose.Types.ObjectId,
         ref: "Season"
+    },
+    reference: {
+        type: String,
+        unique: true,
+        required: true
     }
 });
 
