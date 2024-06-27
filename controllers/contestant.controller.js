@@ -161,8 +161,33 @@ const seasonContestants = asyncHandler(async (req, res) => {
     });
 });
 
+const contactUs = asyncHandler(async(req,res) => {
+    const {name, email, message, subject} = req.body;
+    const _message = `
+        <h5>You have new enquiry</h5>
+        <ul>
+            <li>Name: ${name}</li>
+            <li>Email: ${email}</li>
+        </ul>
+        message:
+        <div>${message}</div>
+    `;
+
+    const mail = await sendEmail("xpat@streetgottalent.com",subject,_message);
+    if(!mail){
+        res.status(400);
+        throw new Error("Error sending email");
+    }
+    return res.status(200).json({
+        success: true,
+        message: "Contestant details submitted you will receive a mail shortly",
+        contestant
+    })
+});
+
 module.exports = {
     contestantRegister,
     searchContestants,
-    seasonContestants
+    seasonContestants,
+    contactUs
 }

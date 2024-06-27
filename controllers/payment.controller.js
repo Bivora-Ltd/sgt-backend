@@ -78,6 +78,26 @@ const recordPayment = asyncHandler(async (req, res) => {
     });
 });
 
+const history = asyncHandler(async(req,res)=>{
+    try {
+        const subaccount_code = process.env.SUB_ACCOUNT_CODE;
+        
+        // Fetch transactions for the subaccount
+        const transactions = await paystack.transaction.list({
+            subaccount: subaccount_code
+        });
+        
+        res.status(200).json({
+            success: true,
+            transactions: transactions.data
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+})
 
 const initializeTransaction = async (req, res) => {
     const { email, amount, callback_url, payment_for:paymentFor, name } = req.body;
@@ -109,4 +129,5 @@ const initializeTransaction = async (req, res) => {
 module.exports = {
     initializeTransaction,
     recordPayment,
+    history
 };
