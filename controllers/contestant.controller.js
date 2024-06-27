@@ -177,8 +177,7 @@ const contactUs = asyncHandler(async(req,res) => {
     
     return res.status(200).json({
         success: true,
-        message: "Contestant details submitted you will receive a mail shortly",
-        contestant
+        message: "Your enquiry has been submitted \n expect a response from us soon"
     })
 });
 
