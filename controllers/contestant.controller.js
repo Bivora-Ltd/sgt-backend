@@ -170,14 +170,11 @@ const contactUs = asyncHandler(async(req,res) => {
             <li>Email: ${email}</li>
         </ul>
         message:
-        <div>${message}</div>
+        <div>"${message}"</div>
     `;
 
-    const mail = await sendEmail("xpat@streetgottalent.com",subject,_message);
-    if(!mail){
-        res.status(400);
-        throw new Error("Error sending email");
-    }
+    await sendEmail("xpat@streetgottalent.com",subject,_message);
+    
     return res.status(200).json({
         success: true,
         message: "Contestant details submitted you will receive a mail shortly",
