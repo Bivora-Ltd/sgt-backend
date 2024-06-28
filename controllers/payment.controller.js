@@ -1,122 +1,57 @@
-const {v4: uuidv4} = require("uuid");
+const { v4: uuidv4 } = require("uuid");
 const asyncHandler = require("express-async-handler");
 const Payment = require("../models/payment.model");
 const Season = require("../models/season.model");
 require("dotenv").config();
-const paystack = require("paystack-api")(process.env.PAYSTACK_SECRET_KEY);
 
-
-const recordPayment = asyncHandler(async (req, res) => {
-    const { reference } = req.body;
-
-    // Verify payment with Paystack
-    const verificationResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-        method: 'GET',
-        headers: {
-            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    const verificationData = await verificationResponse.json();
-
-    if (!verificationData.status) {
-        return res.status(400).json({
-            success: false,
-            message: 'Payment verification failed',
-            error: verificationData.message
-        });
-    }
-
-    const { amount, customer, metadata } = verificationData.data;
-
-    // Check if customer and metadata are available
-    if (!customer || !metadata) {
-        return res.status(400).json({
-            success: false,
-            message: 'Incomplete payment data from Paystack'
-        });
-    }
-
-    const email = customer.email;
-    const name = metadata.name;
-    const paymentFor = metadata.paymentFor;
-
-    // Find the current season
-    let currentSeason = await Season.find({ current: true }).sort({ _id: -1 });
-    currentSeason = currentSeason[0];
-    if (!currentSeason) {
-        return res.status(400).json({
-            success: false,
-            message: 'No season is in progress'
-        });
-    }
-
-    const season = currentSeason._id;
-
-    // Record the payment
-    const newPayment = await Payment.create({
-        name,
-        email,
-        amount: amount / 100,  // Paystack returns amount in kobo, convert to Naira
-        season,
-        paymentFor,
-        reference
-    });
-
-    if (!newPayment) {
-        return res.status(400).json({
-            success: false,
-            message: 'Error saving payment details'
-        });
-    }
-
-    return res.status(200).json({
-        success: true,
-        message: 'payment sucessful',
-        payment: newPayment
-    });
-});
-
-const history = asyncHandler(async(req,res)=>{
-    try {
-        const subaccount_code = process.env.SUB_ACCOUNT_CODE;
-        
-        // Fetch transactions for the subaccount
-        const transactions = await paystack.transaction.list({
-            subaccount: subaccount_code
-        });
-        
-        res.status(200).json({
-            success: true,
-            transactions: transactions.data
-        });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
-    }
-})
+const FLW_BASE_URL = "https://api.flutterwave.com/v3";
 
 const initializeTransaction = async (req, res) => {
-    const { email, amount, callback_url, payment_for:paymentFor, name } = req.body;
+    const { email, amount, callback_url, payment_for: paymentFor, name } = req.body;
+
+    const payload = {
+        tx_ref: uuidv4(),
+        amount: amount,
+        currency: 'NGN',
+        redirect_url: callback_url,
+        customer: {
+            email,
+            name
+        },
+        customizations: {
+            title: 'Payment for Street Got Talent',
+            description: paymentFor,
+            logo: "https://sgt-six.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fhero.9e061f3d.png&w=128&q=75" // Replace with your logo URL
+        },
+        meta: {
+            name,
+            paymentFor
+        }
+    };
 
     try {
-        const response = await paystack.transaction.initialize({
-            email,
-            amount: amount * 100, // Paystack expects the amount in kobo
-            callback_url,
-            metadata:{
-                name,
-                paymentFor
-            }
+        const response = await fetch(`${FLW_BASE_URL}/payments`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
         });
 
-        res.status(200).json({
-            status: 'success',
-            authorization_url: response.data.authorization_url,
-        });
+        const responseData = await response.json();
+
+        if (responseData.status === "success") {
+            res.status(200).json({
+                status: 'success',
+                authorization_url: responseData.data.link,
+            });
+        } else {
+            res.status(500).json({
+                status: 'error',
+                message: responseData.message,
+            });
+        }
     } catch (error) {
         res.status(500).json({
             status: 'error',
@@ -124,6 +59,112 @@ const initializeTransaction = async (req, res) => {
         });
     }
 };
+
+const recordPayment = asyncHandler(async (req, res) => {
+    const { reference } = req.body;
+
+    try {
+        const verificationResponse = await fetch(`${FLW_BASE_URL}/transactions/${reference}/verify`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const verificationData = await verificationResponse.json();
+
+        if (verificationData.status !== "success") {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment verification failed',
+                error: verificationData.message
+            });
+        }
+
+        const { amount, customer, meta } = verificationData.data;
+
+        if (!customer || !meta) {
+            return res.status(400).json({
+                success: false,
+                message: 'Incomplete payment data from Flutterwave'
+            });
+        }
+
+        const email = customer.email;
+        const name = meta.name;
+        const paymentFor = meta.paymentFor;
+
+        let currentSeason = await Season.find({ current: true }).sort({ _id: -1 });
+        currentSeason = currentSeason[0];
+        if (!currentSeason) {
+            return res.status(400).json({
+                success: false,
+                message: 'No season is in progress'
+            });
+        }
+
+        const season = currentSeason._id;
+
+        const newPayment = await Payment.create({
+            name,
+            email,
+            amount: amount,
+            season,
+            paymentFor,
+            reference
+        });
+
+        if (!newPayment) {
+            return res.status(400).json({
+                success: false,
+                message: 'Error saving payment details'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Payment successful',
+            payment: newPayment
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+const history = asyncHandler(async (req, res) => {
+    try {
+        const response = await fetch(`${FLW_BASE_URL}/transactions`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const responseData = await response.json();
+
+        if (responseData.status !== "success") {
+            return res.status(400).json({
+                success: false,
+                message: responseData.message
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            transactions: responseData.data
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
 
 
 module.exports = {
