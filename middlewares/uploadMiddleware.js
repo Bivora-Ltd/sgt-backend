@@ -1,12 +1,23 @@
 const multer = require("multer");
 const path = require("path");
+const cloudinary = require('cloudinary').v2;
+const {CloudinaryStorage} = require("multer-storage-cloudinary")
+require('dotenv').config();
 
-const storage = multer.diskStorage({
-    destination: path.join(__dirname,"../uploads/images"),
-    filename: (req, file, cb) => {
-        return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
-    }
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: 'StreetGotTalent',
+      allowedFormats: ['jpg', 'png', 'jpeg', 'gif'],
+    },
+  });
+
 
 const upload = multer({
     storage: storage,

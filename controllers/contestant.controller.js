@@ -1,18 +1,20 @@
 const Contestant = require("../models/contestant.model");
 const Season = require("../models/season.model");
 const asyncHandler = require("express-async-handler");
-const path = require("path");
 const sendEmail = require("../utils/mail");
 require("dotenv").config();
 
 const contestantRegister = asyncHandler(async(req,res)=>{
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+      }
     const {name,phone: phoneNumber,instagram,tiktok,email,performance_type: performanceType} = req.body;
     const currentSeason = await Season.find({current:true}).sort({_id: -1});
     if(!currentSeason[0] || currentSeason[0].acceptance !== true || new Date() < new Date(currentSeason[0].applicationDeadline)){
         res.status(400);
         throw new Error("Application can not be accepted at the moment");
     }
-    const imageUrl = path.join(process.env.APP_URL,"uploads/images",req.file.filename);
+    const imageUrl = req.file.path;
     const instagramUrl = `https://www.instagram.com/${instagram}`;
     const tiktokUrl = `https://www.tiktok.com/@${tiktok}`;
     const socials = {
