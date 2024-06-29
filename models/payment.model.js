@@ -23,7 +23,7 @@ const paymentSchema = Mongoose.Schema({
     },
     reference: {
         type: String,
-        unique: true,
+        //unique: true,
         required: true
     }
 });
