@@ -44,11 +44,7 @@ const contestantRegister = asyncHandler(async(req,res)=>{
         is <strong>${contestant._id}</strong>. </br> 
         See you at the Audition`;
 
-    const mail = await sendEmail(email,"Registration Successful",message);
-    if(!mail){
-        res.status(400);
-        throw new Error("Error sending email");
-    }
+    await sendEmail(email,"Registration Successful",message);
     return res.status(200).json({
         success: true,
         message: "Contestant details submitted you will receive a mail shortly",
