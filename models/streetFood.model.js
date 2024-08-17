@@ -13,6 +13,10 @@ const streetFoodSchema = Mongoose.Schema({
     price: {
         type: Number,
         required: true
+    },
+    votePower: {
+        type: Number,
+        required: true
     }
 });
 

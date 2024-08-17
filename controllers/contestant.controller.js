@@ -44,7 +44,8 @@ const contestantRegister = asyncHandler(async(req,res)=>{
         Hello ${name} Your registration request for Street Got Talent 
         ${currentSeason[0].title} has been approved your registration Id 
         is <strong>${contestant._id}</strong>. </br> 
-        See you at the Audition`;
+        See you at the Audition </br>
+        Further information will be communicated on our social media handles`;
 
     await sendEmail(email,"Registration Successful",message);
     return res.status(200).json({
@@ -79,10 +80,10 @@ const searchContestants = asyncHandler(async (req, res) => {
     // Build the query object based on the search criteria
     const query = { season: seasonId };
     if (name) {
-        query.name = { $regex: name, $options: 'i' }; // Case-insensitive search by name
+        query.name = { $regex: name.trim(), $options: 'i' }; // Case-insensitive search by name
     }
     if (type) {
-        query.performanceType = { $regex: type, $options: 'i' }; // Case-insensitive search by performance type
+        query.performanceType = { $regex: type.trim(), $options: 'i' }; // Case-insensitive search by performance type
     }
 
     const contestants = await Contestant.find(query)
@@ -113,7 +114,7 @@ const searchContestants = asyncHandler(async (req, res) => {
 
 const seasonContestants = asyncHandler(async (req, res) => {
     const { season_title: seasonTitle } = req.params;
-    const { limit = 10, page = 1 } = req.query; // Default values for limit and page
+    const { limit = 8, page = 1 } = req.query; // Default values for limit and page
 
     const limitValue = parseInt(limit);
     const pageValue = parseInt(page);

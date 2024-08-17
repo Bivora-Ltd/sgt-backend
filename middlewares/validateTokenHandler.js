@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
+const Admin = require("../models/admin.model");
 
 const validateToken = asyncHandler(
     async(req,res,next) =>{
@@ -15,8 +16,14 @@ const validateToken = asyncHandler(
                 res.status(401);
                 throw new Error("Invalid token");
             };
-            req.admin = decoded.admin;
+            return decoded;
         });
+        const admin =  await Admin.findById(decoded.admin.id);
+        if (!admin) {
+            res.status(401);
+            throw new Error("Admin not found Please try log in");
+        }
+        req.admin = admin;
         next();
     }
 )

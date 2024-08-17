@@ -4,7 +4,7 @@ require("dotenv").config();
 
 // Function to make a request to keep the server alive
 const keepServerAlive = () => {
-    http.get(`${process.env.APP_URL}/api/v1/seasons/current`);
+    http.get(`${process.env.APP_URL}/api/v1/`);
     console.log('Pinged the server to keep it alive');
 };
 
