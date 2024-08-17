@@ -141,7 +141,7 @@ const seasonContestants = asyncHandler(async (req, res) => {
     const totalContestants = await Contestant.countDocuments({ season: seasonId });
     const totalPages = Math.ceil(totalContestants / limitValue);
 
-    if (contestants.length === 0) {
+    if (contestants.length === 0 || !contestants) {
         return res.status(404).json({
             success: false,
             message: "No contestants found",
@@ -180,9 +180,40 @@ const contactUs = asyncHandler(async(req,res) => {
     })
 });
 
+const getContestant = asyncHandler(async (req, res) => {
+    const { season_title: seasonTitle, contestant_id: contestantId } = req.params;
+
+    let season;
+    if (seasonTitle === "current") {
+        season = await Season.findOne({ current: true }).sort({ _id: -1 }).limit(1);
+    } else {
+        season = await Season.findOne({ title: seasonTitle });
+    }
+
+    if (!season) {
+        res.status(404);
+        throw new Error("Season not found");
+    }
+
+    const seasonId = season._id;
+    const contestant = await Contestant.findOne({ season: seasonId, id: contestantId });
+
+    if (!contestant) {
+        res.status(404);
+        throw new Error("Contestant not found");
+    }
+
+    return res.status(200).json({
+        success: true,
+        contestant,
+    });
+});
+
+
 module.exports = {
     contestantRegister,
     searchContestants,
     seasonContestants,
+    getContestant,
     contactUs
 }
