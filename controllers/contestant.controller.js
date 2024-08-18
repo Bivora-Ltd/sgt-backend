@@ -185,7 +185,8 @@ const getContestant = asyncHandler(async (req, res) => {
 
     let season;
     if (seasonTitle === "current") {
-        season = await Season.findOne({ current: true }).sort({ _id: -1 }).limit(1);
+        season = await Season.find({ current: true }).sort({ _id: -1 }).limit(1);
+        season = season[0];
     } else {
         season = await Season.findOne({ title: seasonTitle });
     }
@@ -196,7 +197,7 @@ const getContestant = asyncHandler(async (req, res) => {
     }
 
     const seasonId = season._id;
-    const contestant = await Contestant.findOne({ season: seasonId, id: contestantId });
+    const contestant = await Contestant.findById(contestantId);
 
     if (!contestant) {
         res.status(404);
