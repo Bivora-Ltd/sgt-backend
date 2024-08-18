@@ -197,7 +197,7 @@ const getContestant = asyncHandler(async (req, res) => {
     }
 
     const seasonId = season._id;
-    const contestant = await Contestant.findById(contestantId);
+    const contestant = await Contestant.findOne({$and:[{season: seasonId},{_id: contestantId}]});
 
     if (!contestant) {
         res.status(404);

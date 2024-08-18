@@ -14,7 +14,7 @@ contestantRoute.get("/:season_title",seasonContestants);
 
 contestantRoute.post("/contact",checkForMissingFields(["name","email","message","subject"]),contactUs);
 
-contestantRoute.route("/:season_title/:contestantId")
+contestantRoute.route("/:season_title/:contestant_id")
     .get(getContestant)
 
 module.exports = contestantRoute;
