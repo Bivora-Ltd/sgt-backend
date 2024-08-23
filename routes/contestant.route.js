@@ -1,6 +1,6 @@
 const express = require("express");
 const checkForMissingFields = require("../middlewares/checkMissingFields");
-const { contestantRegister, searchContestants, seasonContestants, contactUs, getContestant } = require("../controllers/contestant.controller");
+const { contestantRegister, searchContestants, seasonContestants, contactUs, getContestant, voteContestant } = require("../controllers/contestant.controller");
 const upload = require("../middlewares/uploadMiddleware");
 
 const contestantRoute = express.Router();
@@ -16,5 +16,7 @@ contestantRoute.post("/contact",checkForMissingFields(["name","email","message",
 
 contestantRoute.route("/:season_title/:contestant_id")
     .get(getContestant)
+
+contestantRoute.post("/vote",checkForMissingFields(["contestant","streetfood"]),voteContestant)
 
 module.exports = contestantRoute;

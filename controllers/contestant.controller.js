@@ -1,5 +1,6 @@
 const Contestant = require("../models/contestant.model");
 const Season = require("../models/season.model");
+const StreetFood = require("../models/streetFood.model");
 const asyncHandler = require("express-async-handler");
 const sendEmail = require("../utils/mail");
 require("dotenv").config();
@@ -210,11 +211,36 @@ const getContestant = asyncHandler(async (req, res) => {
     });
 });
 
+const voteContestant = asyncHandler(async (req,res)=>{
+    const {contestant,streetfood} = req.body;
+    const _contestant = await Contestant.findById(contestant);
+    
+    if(!_contestant){
+        res.status(400);
+        throw new Error("Contestant not found");
+    }
+    const _streetFood = await StreetFood.findById(streetfood);
+    
+    if(!_streetFood){
+        res.status(400);
+        throw new Error("Street Food not found");
+    }
+    const votePower = parseInt(_streetFood.votePower);
+
+    _contestant.votes += votePower;
+    await _contestant.save();
+    return res.status(200).json({
+        success: true,
+        message: "Vote submitted successfully",
+        contestant: _contestant
+    });
+})
 
 module.exports = {
     contestantRegister,
     searchContestants,
     seasonContestants,
     getContestant,
-    contactUs
+    contactUs,
+    voteContestant
 }

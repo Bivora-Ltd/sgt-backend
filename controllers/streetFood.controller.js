@@ -17,7 +17,7 @@ const newStreetFood = asyncHandler(async(req,res)=>{
     };
     return res.status(201).json({
         success: true,
-        message:"Added ne Street Food",
+        message:"Added new Street Food",
         streetFood: newStreetFood
     });
 });
@@ -51,17 +51,32 @@ const editStreetFood = asyncHandler(async(req,res)=>{
 });
 
 const deleteStreetFood = asyncHandler(async(req,res)=>{
-    const {id} = req.params;
-    const streetFood = StreetFood.findById(id);
+    const {streetFoodId} = req.params;
+    const streetFood = await StreetFood.findById(streetFoodId);
     if(!streetFood){
         return res.status(404).json({
             success: false,
             message: "StreetFood not found"
         });
     }
+    await StreetFood.deleteOne({_id:streetFoodId});
+    return res.status(200).json({
+        success: true,
+        message: "StreetFood deleted"
+    });
 });
+
+const getAllStreetFoods = asyncHandler(async(req,res)=>{
+    const streetFoods = await StreetFood.find();
+    return res.status(200).json({
+        success: true,
+        streetFoods
+    });
+})
 
 module.exports = {
     newStreetFood,
-    editStreetFood
+    editStreetFood,
+    getAllStreetFoods,
+    deleteStreetFood
 }
