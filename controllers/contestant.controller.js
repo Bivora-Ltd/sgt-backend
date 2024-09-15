@@ -156,10 +156,11 @@ const seasonContestants = asyncHandler(async (req, res) => {
         .skip((pageValue - 1) * limitValue)
         .limit(limitValue)
         .sort({votes: -1})
+    }else{
+        contestants = await Contestant.find({ season: seasonId })
+            .skip((pageValue - 1) * limitValue)
+            .limit(limitValue);
     }
-    contestants = await Contestant.find({ season: seasonId })
-        .skip((pageValue - 1) * limitValue)
-        .limit(limitValue);
 
     
 
