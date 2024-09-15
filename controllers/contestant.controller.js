@@ -56,6 +56,21 @@ const contestantRegister = asyncHandler(async(req,res)=>{
     })
 });
 
+const eliminateContestant = asyncHandler(async(req,res)=>{
+    const {id} = req.params;
+    const contestant = await Contestant.findById(id);
+    if(! contestant){
+        res.status(404)
+        throw new Error("Contestant not found")
+    }
+    contestant.status = "evicted";
+    await contestant.save();
+    return res.status(200).json({
+        status: true,
+        message: "You evicted contestant "+ contestant.name
+    });
+})
+
 const searchContestants = asyncHandler(async (req, res) => {
     const { season_title: seasonTitle } = req.params;
     const { limit = 10, page = 1, name, type } = req.query; // Query parameters for pagination and search criteria
@@ -137,7 +152,9 @@ const seasonContestants = asyncHandler(async (req, res) => {
 
     const contestants = await Contestant.find({ season: seasonId })
         .skip((pageValue - 1) * limitValue)
-        .limit(limitValue);
+        .limit(limitValue)
+        .sort(req.query.leaderboard ? { votes: -1 } : {});
+
 
     const totalContestants = await Contestant.countDocuments({ season: seasonId });
     const totalPages = Math.ceil(totalContestants / limitValue);
@@ -216,8 +233,12 @@ const voteContestant = asyncHandler(async (req,res)=>{
     const _contestant = await Contestant.findById(contestant);
     
     if(!_contestant){
-        res.status(400);
+        res.status(404);
         throw new Error("Contestant not found");
+    }
+    if(contestant.status == "evicted" || contestant.status == "eliminated"){
+        res.status(400);
+        throw new Error("You can not vote for an evicted contestant ");
     }
     const _streetFood = await StreetFood.findById(streetfood);
     
@@ -242,5 +263,6 @@ module.exports = {
     seasonContestants,
     getContestant,
     contactUs,
-    voteContestant
+    voteContestant,
+    eliminateContestant
 }

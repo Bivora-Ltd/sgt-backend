@@ -1,6 +1,7 @@
 const Season = require("../models/season.model");
 const Contestant = require("../models/contestant.model");
 const asyncHandler = require("express-async-handler");
+const sendEmail = require("../utils/mail");
 
 const newSeason = asyncHandler(async(req,res)=>{
     const {title,limit,application_deadline,reg_fee:registrationFee} = req.body;
@@ -41,6 +42,14 @@ const currentSeason = asyncHandler(async(req,res)=>{
     });
 });
 
+const getSeason = asyncHandler(async(req,res)=>{
+    const {season_id: seasonId} = req.params;
+    const season = await Season.findById(seasonId);
+    return res.status(200).json({
+        success: true,
+        season
+    })
+})
 
 const advanceSeason = asyncHandler(async(req,res)=>{
     let currentSeason = await Season.find({current:true}).sort({_id:-1});
@@ -62,12 +71,12 @@ const advanceSeason = asyncHandler(async(req,res)=>{
                     contestant.group = group;
                     contestant.status = "group";
                     const message = `
-                        Congratulations ${name} \n 
+                        Congratulations ${contestant.name} \n 
                         You are part of the <strong>top 20</strong> to advance to the group stage \n
                         See you at the next stage where you battle it out with others in <strong>${group}</strong>
                         Date and time will be announced on our official handles below`;
 
-                    const mail = await sendEmail(email,"Congratulations you advanced",message);
+                    const mail = await sendEmail(contestant.email,"Congratulations you advanced",message);
                     if(!mail){
                         res.status(400);
                         throw new Error("Error sending email");
@@ -203,5 +212,6 @@ module.exports = {
     newSeason,
     currentSeason,
     advanceSeason,
-    allSeasons
+    allSeasons,
+    getSeason
 }
