@@ -150,14 +150,16 @@ const seasonContestants = asyncHandler(async (req, res) => {
 
     const seasonId = season._id;
     const {leaderboard} = req.query;
-    const sortCriteria = leaderboard ? { votes: -1 } : {};
+    let contestants;
     if(leaderboard){
-        console.log("hey")
-    }
-    const contestants = await Contestant.find({ season: seasonId })
+        contestants = await Contestant.find({ season: seasonId })
         .skip((pageValue - 1) * limitValue)
         .limit(limitValue)
-        .sort(sortCriteria); 
+        .sort({votes: -1})
+    }
+    contestants = await Contestant.find({ season: seasonId })
+        .skip((pageValue - 1) * limitValue)
+        .limit(limitValue);
 
     
 
