@@ -153,7 +153,7 @@ const seasonContestants = asyncHandler(async (req, res) => {
     const contestants = await Contestant.find({ season: seasonId })
         .skip((pageValue - 1) * limitValue)
         .limit(limitValue)
-        .sort(req.query.leaderboard ? { votes: -1 } : {});
+        .sort(req.query.leaderboard ? { votes: 1 } : {});
 
 
     const totalContestants = await Contestant.countDocuments({ season: seasonId });
