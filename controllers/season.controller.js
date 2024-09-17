@@ -206,12 +206,37 @@ const allSeasons = asyncHandler(async(req,res)=>{
         success: true,
         seasons
     })
-})
+});
+
+const updateSeason = asyncHandler(async(req,res) =>{
+    const {season_id} = req.params;
+    const season = await Season.findById(season_id);
+    if(!season){
+        res.status(404);
+        throw new Error("Season not found");
+    }
+    const allowedFields = Object.keys(Season.schema.paths);
+
+    const invalidFields = Object.keys(req.body).filter(field => !allowedFields.includes(field));
+
+    if (invalidFields.length > 0) {
+        res.status(400);
+        throw new Error(`Invalid fields: ${invalidFields.join(', ')}`);
+    }
+
+    Object.assign(season,req.body);
+    await season.save();
+    return res.status(200).json({
+        success: true,
+        season
+    })
+});
 
 module.exports = {
     newSeason,
     currentSeason,
     advanceSeason,
     allSeasons,
-    getSeason
+    getSeason,
+    updateSeason
 }

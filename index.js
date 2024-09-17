@@ -5,6 +5,7 @@ const _db = require("./config/dbConnection");
 require("dotenv").config();
 require("./cronjob");
 const cors = require("cors");
+const morgan = require("morgan");
 
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
@@ -13,6 +14,18 @@ const swaggerJsDocs = YAML.load('./utils/swagger.yaml');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(morgan((tokens, req, res) => {
+  return JSON.stringify({
+      method: tokens.method(req, res),
+      url: tokens.url(req, res),
+      status: tokens.status(req, res),
+      content_length: tokens.res(req, res, 'content-length'),
+      response_time: `${tokens['response-time'](req, res)} ms`,
+      remote_addr: tokens['remote-addr'](req, res),
+      user_agent: tokens['user-agent'](req, res),
+      timestamp: new Date().toISOString()
+  });
+}));
 app.use(cors());
 
 app.use(express.json());
