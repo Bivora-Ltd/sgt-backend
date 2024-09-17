@@ -228,7 +228,8 @@ const updateSeason = asyncHandler(async(req,res) =>{
     await season.save();
     return res.status(200).json({
         success: true,
-        season
+        season,
+        message: "update sucessfull"
     })
 });
 
