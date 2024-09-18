@@ -55,7 +55,8 @@ const getSeasonWinner = asyncHandler(async(req,res)=>{
     const { season_id: seasonId } = req.params;
     const season = await Season.findById(seasonId);
     if (!season) {
-        return res.status(404).json({ message: "Season not found" });
+        res.status(404)
+        throw new Error("Season not found");
     }
     if(season.status !== "completed"){
         res.status(400)
@@ -70,7 +71,8 @@ const getSeasonWinner = asyncHandler(async(req,res)=>{
     }
     return res.status(200).json({
         success: true,
-        winner
+        winner,
+        season
     });
 })
 
