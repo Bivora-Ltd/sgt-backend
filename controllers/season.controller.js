@@ -51,37 +51,37 @@ const getSeason = asyncHandler(async(req,res)=>{
     })
 })
 
-const advanceSeason = asyncHandler(async(req,res)=>{
-    let currentSeason = await Season.find({current:true}).sort({_id:-1});
+const advanceSeason = asyncHandler(async (req, res) => {
+    let currentSeason = await Season.find({ current: true }).sort({ _id: -1 });
     currentSeason = currentSeason[0];
-    if(!currentSeason){
-        res.status(400);
-        throw new Error("you have no season running")
-    };
-    const groups = ["Group A","Group B","Group C","Group D"];
+    if (!currentSeason) {
+        return res.status(400).json({ message: "No running season found" });
+    }
+
+    const groups = ["Group A", "Group B", "Group C", "Group D"];
     const currentStage = currentSeason.status;
+
     switch (currentStage) {
         case "audition":
-            const contestants = await Contestant.find({season: currentSeason._id}).sort({votes: -1});
+            const contestants = await Contestant.find({ season: currentSeason._id, status: "audition" }).sort({ votes: -1 });
             let count = 1;
             for (let i = 0; i < contestants.length; i++) {
                 const contestant = contestants[i];
                 if (count <= 20) {
-                    let group = groups[count % 4];
+                    let group = groups[(count - 1) % 4];  // Fixed group assignment
                     contestant.group = group;
                     contestant.status = "group";
-                    // const c_email = contestant.email;
-                    // const message = `
-                    //     Congratulations ${contestant.name} \n 
-                    //     You are part of the <strong>top 20</strong> to advance to the group stage \n
-                    //     See you at the next stage where you battle it out with others in <strong>${group}</strong>
-                    //     Date and time will be announced on our official handles below`;
+                    const message = `
+                        Congratulations ${contestant.name},\n 
+                        You are part of the top 20 to advance to the group stage.\n
+                        See you at the next stage, where you'll battle it out in <strong>${group}</strong>.\n
+                        Date and time will be announced on our official channels.`;
 
-                    // const mail = await sendEmail(c_email,"Congratulations you advanced",message);
-                    // if(!mail){
-                    //     res.status(400);
-                    //     throw new Error("Error sending email");
-                    // }
+                    try {
+                        await sendEmail(contestant.email, "Congratulations, you've advanced!", message);
+                    } catch (error) {
+                        console.error(`Error sending email to ${contestant.email}: ${error.message}`);
+                    }
                 } else {
                     contestant.status = "eliminated";
                 }
@@ -95,23 +95,23 @@ const advanceSeason = asyncHandler(async(req,res)=>{
                 success: true,
                 message: "Season advanced to group stage"
             });
-        case "group":
-            for (let i = 0; i < groups.length; i++) {
-                const contestants = await Contestant.find({season: currentSeason._id, group:groups[i]}).sort({votes: -1});
-                for (let j = 0; j < contestants.length; j++) {
-                    const contestant = contestants[j];
-                    if (j <= 3) {
-                        contestant.status = "semi";
-                        // const message = `
-                        // Congratulations ${name} \n 
-                        // You made it to the <strong>top 3</strong> <strong>${groups[i]}</strong> to advance to the semi-finals \n
-                        // Date and time will be announced on our official handles below`;
 
-                        // const mail = await sendEmail(email,"Congratulations you advanced",message);
-                        // if(!mail){
-                        //     res.status(400);
-                        //     throw new Error("Error sending email");
-                        // }
+        case "group":
+            for (let group of groups) {
+                const groupContestants = await Contestant.find({ season: currentSeason._id, group, status: "group" }).sort({ votes: -1 });
+                for (let j = 0; j < groupContestants.length; j++) {
+                    const contestant = groupContestants[j];
+                    if (j < 3) {  // Top 3 advance
+                        contestant.status = "semi";
+                        const message = `
+                            Congratulations ${contestant.name},\n 
+                            You've made it to the top 3 in <strong>${group}</strong> and are advancing to the semi-finals.\n
+                            Stay tuned for the next stage.`;
+                        try {
+                            await sendEmail(contestant.email, "Congratulations, you're advancing!", message);
+                        } catch (error) {
+                            console.error(`Error sending email to ${contestant.email}: ${error.message}`);
+                        }
                     } else {
                         contestant.status = "eliminated";
                     }
@@ -124,24 +124,23 @@ const advanceSeason = asyncHandler(async(req,res)=>{
                 success: true,
                 message: "Season advanced to semi-finals"
             });
-        case "semi":
-            for (let i = 0; i < groups.length; i++) {
-                const contestants = await Contestant.find({season: currentSeason._id, group: groups[i]}).sort({votes: -1});
-                for (let j = 0; j < contestants.length; j++) {
-                    const contestant = contestants[j];
-                    if (j === 1) {
-                        contestant.status = "final";
-                        // const message = `
-                        // Congratulations ${name} \n 
-                        // You made it to the <strong>finals</strong> as the <strong>${groups[i]}</strong> Top Contestants \n
-                        // Can you battle it out with other finalists for the crown \n
-                        // Date and time will be announced on our official handles below`;
 
-                        // const mail = await sendEmail(email,"Congratulations you advanced",message);
-                        // if(!mail){
-                        //     res.status(400);
-                        //     throw new Error("Error sending email");
-                        // }
+        case "semi":
+            for (let group of groups) {
+                const groupContestants = await Contestant.find({ season: currentSeason._id, group, status: "semi" }).sort({ votes: -1 });
+                for (let j = 0; j < groupContestants.length; j++) {
+                    const contestant = groupContestants[j];
+                    if (j === 0) {  // Only the top contestant from each group goes to the final
+                        contestant.status = "final";
+                        const message = `
+                            Congratulations ${contestant.name},\n 
+                            You've reached the finals as the top contestant from <strong>${group}</strong>.\n
+                            Prepare for the final showdown.`;
+                        try {
+                            await sendEmail(contestant.email, "Congratulations, you're a finalist!", message);
+                        } catch (error) {
+                            console.error(`Error sending email to ${contestant.email}: ${error.message}`);
+                        }
                     } else {
                         contestant.status = "eliminated";
                     }
@@ -154,23 +153,23 @@ const advanceSeason = asyncHandler(async(req,res)=>{
                 success: true,
                 message: "Season advanced to finals"
             });
+
         case "final":
-            const finalists = await Contestant.find({season: currentSeason._id, status: "final"}).sort({votes: -1});
+            const finalists = await Contestant.find({ season: currentSeason._id, status: "final" }).sort({ votes: -1 });
             for (let i = 0; i < finalists.length; i++) {
                 const contestant = finalists[i];
-                switch(i){
+                switch (i) {
                     case 0:
                         contestant.status = "winner";
-                        // const message = `
-                        // Congratulations ${name} \n 
-                        // <strong> You are the winner of Streets Got Talent ${currentSeason.title}</strong> \n
-                        // Next steps will be communicated on our official handle`;
-
-                        // const mail = await sendEmail(email,"Congratulations you are the winner",message);
-                        // if(!mail){
-                        //     res.status(400);
-                        //     throw new Error("Error sending email");
-                        // }
+                        const winnerMessage = `
+                            Congratulations ${contestant.name},\n 
+                            You are the winner of Street Got Talent ${currentSeason.title}.\n
+                            Further steps will be communicated via our official channels.`;
+                        try {
+                            await sendEmail(contestant.email, "Congratulations, you are the winner!", winnerMessage);
+                        } catch (error) {
+                            console.error(`Error sending email to ${contestant.email}: ${error.message}`);
+                        }
                         break;
                     case 1:
                         contestant.status = "second";
@@ -192,14 +191,16 @@ const advanceSeason = asyncHandler(async(req,res)=>{
             await currentSeason.save();
             return res.status(200).json({
                 success: true,
-                message: "Season completed. Winner: " + finalists[0].name
+                message: `Season completed. Winner: ${finalists[0].name}`
             });
+
         default:
-            res.status(400);
-            throw new Error("Invalid season status");
+            return res.status(400).json({
+                message: "Invalid season status"
+            });
     }
-    
 });
+
 
 const allSeasons = asyncHandler(async(req,res)=>{
     const seasons = await Season.find();
