@@ -1,7 +1,7 @@
 const express = require("express");
 const checkForMissingFields = require("../middlewares/checkMissingFields");
 const validateToken = require("../middlewares/validateTokenHandler");
-const { newSeason, currentSeason, advanceSeason, allSeasons, getSeason, updateSeason } = require("../controllers/season.controller");
+const { newSeason, currentSeason, advanceSeason, allSeasons, getSeason, updateSeason, getSeasonWinner } = require("../controllers/season.controller");
 
 const seasonRoute = express.Router();
 
@@ -11,6 +11,7 @@ seasonRoute.route("/")
 
 seasonRoute.get("/current",currentSeason);
 seasonRoute.get("/:season_id",getSeason);
+seasonRoute.get("/:season_id/winner",validateToken, getSeasonWinner);
 seasonRoute.put("/:season_id", validateToken, updateSeason)
 
 seasonRoute.post("/advance",validateToken,advanceSeason)

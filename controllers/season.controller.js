@@ -45,14 +45,33 @@ const currentSeason = asyncHandler(async(req,res)=>{
 const getSeason = asyncHandler(async(req,res)=>{
     const {season_id: seasonId} = req.params;
     const season = await Season.findById(seasonId);
-    const sznWinner = await Contestant.findOne({season: seasonId, status: "winner"})
-    if(season.status == "completed"){
-        season.winner = sznWinner;
-    }
     return res.status(200).json({
         success: true,
         season
     })
+})
+
+const getSeasonWinner = asyncHandler(async(req,res)=>{
+    const { season_id: seasonId } = req.params;
+    const season = await Season.findById(seasonId);
+    if (!season) {
+        return res.status(404).json({ message: "Season not found" });
+    }
+    if(season.status !== "completed"){
+        res.status(400)
+        throw new Error("Season is still ongoing")
+    }
+    const winner = await Contestant.findOne({
+        season: season._id,
+        status: "winner"
+    });
+    if (!winner) {
+        return res.status(404).json({ message: "No winner found for this season" });
+    }
+    return res.status(200).json({
+        success: true,
+        winner
+    });
 })
 
 const advanceSeason = asyncHandler(async (req, res) => {
@@ -191,6 +210,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                 await contestant.save();
             }
             currentSeason.status = "completed";
+            currentSeason.current = false;
             await currentSeason.save();
             return res.status(200).json({
                 success: true,
@@ -244,5 +264,6 @@ module.exports = {
     advanceSeason,
     allSeasons,
     getSeason,
-    updateSeason
+    updateSeason,
+    getSeasonWinner
 }
