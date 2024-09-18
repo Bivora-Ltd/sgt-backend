@@ -102,16 +102,16 @@ const advanceSeason = asyncHandler(async(req,res)=>{
                     const contestant = contestants[j];
                     if (j <= 3) {
                         contestant.status = "semi";
-                        const message = `
-                        Congratulations ${name} \n 
-                        You made it to the <strong>top 3</strong> <strong>${groups[i]}</strong> to advance to the semi-finals \n
-                        Date and time will be announced on our official handles below`;
+                        // const message = `
+                        // Congratulations ${name} \n 
+                        // You made it to the <strong>top 3</strong> <strong>${groups[i]}</strong> to advance to the semi-finals \n
+                        // Date and time will be announced on our official handles below`;
 
-                        const mail = await sendEmail(email,"Congratulations you advanced",message);
-                        if(!mail){
-                            res.status(400);
-                            throw new Error("Error sending email");
-                        }
+                        // const mail = await sendEmail(email,"Congratulations you advanced",message);
+                        // if(!mail){
+                        //     res.status(400);
+                        //     throw new Error("Error sending email");
+                        // }
                     } else {
                         contestant.status = "eliminated";
                     }
@@ -131,17 +131,17 @@ const advanceSeason = asyncHandler(async(req,res)=>{
                     const contestant = contestants[j];
                     if (j === 1) {
                         contestant.status = "final";
-                        const message = `
-                        Congratulations ${name} \n 
-                        You made it to the <strong>finals</strong> as the <strong>${groups[i]}</strong> Top Contestants \n
-                        Can you battle it out with other finalists for the crown \n
-                        Date and time will be announced on our official handles below`;
+                        // const message = `
+                        // Congratulations ${name} \n 
+                        // You made it to the <strong>finals</strong> as the <strong>${groups[i]}</strong> Top Contestants \n
+                        // Can you battle it out with other finalists for the crown \n
+                        // Date and time will be announced on our official handles below`;
 
-                        const mail = await sendEmail(email,"Congratulations you advanced",message);
-                        if(!mail){
-                            res.status(400);
-                            throw new Error("Error sending email");
-                        }
+                        // const mail = await sendEmail(email,"Congratulations you advanced",message);
+                        // if(!mail){
+                        //     res.status(400);
+                        //     throw new Error("Error sending email");
+                        // }
                     } else {
                         contestant.status = "eliminated";
                     }
@@ -161,16 +161,16 @@ const advanceSeason = asyncHandler(async(req,res)=>{
                 switch(i){
                     case 0:
                         contestant.status = "winner";
-                        const message = `
-                        Congratulations ${name} \n 
-                        <strong> You are the winner of Streets Got Talent ${currentSeason.title}</strong> \n
-                        Next steps will be communicated on our official handle`;
+                        // const message = `
+                        // Congratulations ${name} \n 
+                        // <strong> You are the winner of Streets Got Talent ${currentSeason.title}</strong> \n
+                        // Next steps will be communicated on our official handle`;
 
-                        const mail = await sendEmail(email,"Congratulations you are the winner",message);
-                        if(!mail){
-                            res.status(400);
-                            throw new Error("Error sending email");
-                        }
+                        // const mail = await sendEmail(email,"Congratulations you are the winner",message);
+                        // if(!mail){
+                        //     res.status(400);
+                        //     throw new Error("Error sending email");
+                        // }
                         break;
                     case 1:
                         contestant.status = "second";
