@@ -70,17 +70,18 @@ const advanceSeason = asyncHandler(async(req,res)=>{
                     let group = groups[count % 4];
                     contestant.group = group;
                     contestant.status = "group";
-                    const message = `
-                        Congratulations ${contestant.name} \n 
-                        You are part of the <strong>top 20</strong> to advance to the group stage \n
-                        See you at the next stage where you battle it out with others in <strong>${group}</strong>
-                        Date and time will be announced on our official handles below`;
+                    // const c_email = contestant.email;
+                    // const message = `
+                    //     Congratulations ${contestant.name} \n 
+                    //     You are part of the <strong>top 20</strong> to advance to the group stage \n
+                    //     See you at the next stage where you battle it out with others in <strong>${group}</strong>
+                    //     Date and time will be announced on our official handles below`;
 
-                    const mail = await sendEmail(contestant.email,"Congratulations you advanced",message);
-                    if(!mail){
-                        res.status(400);
-                        throw new Error("Error sending email");
-                    }
+                    // const mail = await sendEmail(c_email,"Congratulations you advanced",message);
+                    // if(!mail){
+                    //     res.status(400);
+                    //     throw new Error("Error sending email");
+                    // }
                 } else {
                     contestant.status = "eliminated";
                 }
