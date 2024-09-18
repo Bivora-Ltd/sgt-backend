@@ -10,8 +10,8 @@ seasonRoute.route("/")
     .get(validateToken,allSeasons)
 
 seasonRoute.get("/current",currentSeason);
-seasonRoute.get("/:season_id",getSeason);
 seasonRoute.get("/:season_id/winner",validateToken, getSeasonWinner);
+seasonRoute.get("/:season_id",getSeason);
 seasonRoute.put("/:season_id", validateToken, updateSeason)
 
 seasonRoute.post("/advance",validateToken,advanceSeason)
