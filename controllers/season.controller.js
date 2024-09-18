@@ -45,6 +45,10 @@ const currentSeason = asyncHandler(async(req,res)=>{
 const getSeason = asyncHandler(async(req,res)=>{
     const {season_id: seasonId} = req.params;
     const season = await Season.findById(seasonId);
+    const sznWinner = await Contestant.findOne({season: seasonId, status: "winner"})
+    if(season.status == "completed"){
+        season.winner = sznWinner;
+    }
     return res.status(200).json({
         success: true,
         season
@@ -83,7 +87,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                         console.error(`Error sending email to ${contestant.email}: ${error.message}`);
                     }
                 } else {
-                    contestant.status = "eliminated";
+                    contestant.status = "evicted";
                 }
                 await contestant.save();
                 count++;
@@ -113,7 +117,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                             console.error(`Error sending email to ${contestant.email}: ${error.message}`);
                         }
                     } else {
-                        contestant.status = "eliminated";
+                        contestant.status = "evicted";
                     }
                     await contestant.save();
                 }
@@ -142,7 +146,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                             console.error(`Error sending email to ${contestant.email}: ${error.message}`);
                         }
                     } else {
-                        contestant.status = "eliminated";
+                        contestant.status = "evicted";
                     }
                     await contestant.save();
                 }
@@ -181,13 +185,12 @@ const advanceSeason = asyncHandler(async (req, res) => {
                         contestant.status = "fourth";
                         break;
                     default:
-                        contestant.status = "eliminated";
+                        contestant.status = "evicted";
                         break;
                 }
                 await contestant.save();
             }
             currentSeason.status = "completed";
-            currentSeason.current = false;
             await currentSeason.save();
             return res.status(200).json({
                 success: true,
