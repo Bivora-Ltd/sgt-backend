@@ -24,6 +24,7 @@ const newSeason = asyncHandler(async(req,res)=>{
     }
     if(lastSeason[0]){
         lastSeason[0].current = false;
+        lastSeason[0].status = "completed";
         await lastSeason[0].save();
     };
 
