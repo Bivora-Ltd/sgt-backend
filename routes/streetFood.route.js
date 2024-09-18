@@ -11,5 +11,5 @@ streetFoodRoute.route("/")
 
 streetFoodRoute.route("/:streetFoodId")
     .put(validateToken,upload.single('image'),editStreetFood)
-    .delete(deleteStreetFood)
+    .delete(validateToken,deleteStreetFood)
 module.exports = streetFoodRoute;
