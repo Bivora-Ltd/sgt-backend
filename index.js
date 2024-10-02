@@ -3,7 +3,7 @@ const errorHandler = require("./middlewares/errorHandler");
 const Router = require("./routes");
 const _db = require("./config/dbConnection");
 require("dotenv").config();
-// require("./cronjob");
+require("./cronjob");
 const cors = require("cors");
 const morgan = require("morgan");
 
