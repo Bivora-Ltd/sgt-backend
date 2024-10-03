@@ -237,7 +237,7 @@ const getContestant = asyncHandler(async (req, res) => {
 });
 
 const voteContestant = asyncHandler(async (req,res)=>{
-    const {contestant,streetfood} = req.body;
+    const {contestant,streetfood, qty} = req.body;
     const _contestant = await Contestant.findById(contestant);
     
     if(!_contestant){
@@ -254,7 +254,7 @@ const voteContestant = asyncHandler(async (req,res)=>{
         res.status(400);
         throw new Error("Street Food not found");
     }
-    const votePower = parseInt(_streetFood.votePower);
+    const votePower = parseInt(_streetFood.votePower) * qty;
 
     _contestant.votes += votePower;
     await _contestant.save();

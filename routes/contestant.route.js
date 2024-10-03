@@ -20,6 +20,6 @@ contestantRoute.post("/contact",checkForMissingFields(["name","email","message",
 contestantRoute.route("/:season_title/:contestant_id")
     .get(getContestant)
 
-contestantRoute.post("/vote",checkForMissingFields(["contestant","streetfood"]),voteContestant)
+contestantRoute.post("/vote",checkForMissingFields(["contestant","streetfood","qty"]),voteContestant)
 
 module.exports = contestantRoute;
