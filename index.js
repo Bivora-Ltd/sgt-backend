@@ -2,7 +2,7 @@ const express = require("express");
 const errorHandler = require("./middlewares/errorHandler");
 const Router = require("./routes");
 const _db = require("./config/dbConnection");
-// require("dotenv").config();
+require("dotenv").config();
 require("./cronjob");
 const cors = require("cors");
 const morgan = require("morgan");
