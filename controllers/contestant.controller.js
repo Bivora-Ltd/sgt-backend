@@ -73,7 +73,7 @@ const eliminateContestant = asyncHandler(async(req,res)=>{
 
 const searchContestants = asyncHandler(async (req, res) => {
     const { season_title: seasonTitle } = req.params;
-    const { limit = 10, page = 1, name, type } = req.query; // Query parameters for pagination and search criteria
+    const { limit = 20, page = 1, name, type } = req.query; // Query parameters for pagination and search criteria
 
     const limitValue = parseInt(limit);
     const pageValue = parseInt(page);
