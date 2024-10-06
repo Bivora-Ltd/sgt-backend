@@ -130,10 +130,14 @@ const searchContestants = asyncHandler(async (req, res) => {
 
 const seasonContestants = asyncHandler(async (req, res) => {
     const { season_title: seasonTitle } = req.params;
-    const { limit = 8, page = 1 } = req.query; // Default values for limit and page
+    const { limit, page, leaderboard } = req.query; // Read limit and page from query params
 
-    const limitValue = parseInt(limit);
-    const pageValue = parseInt(page);
+    let limitValue, pageValue;
+
+    if (limit && page) {
+        limitValue = parseInt(limit);
+        pageValue = parseInt(page);
+    }
 
     let season;
     if (seasonTitle === "current") {
@@ -149,25 +153,26 @@ const seasonContestants = asyncHandler(async (req, res) => {
     }
 
     const seasonId = season._id;
-    const {leaderboard} = req.query;
+
     let contestants;
-    if(leaderboard){
+    if (leaderboard) {
         contestants = await Contestant.find({ season: seasonId })
-        .skip((pageValue - 1) * limitValue)
-        .limit(limitValue)
-        .sort({votes: -1})
-    }else{
-        contestants = await Contestant.find({ season: seasonId })
-            .skip((pageValue - 1) * limitValue)
-            .limit(limitValue);
+            .sort({ votes: -1 });
+    } else {
+        if (limitValue && pageValue) {
+            contestants = await Contestant.find({ season: seasonId })
+                .skip((pageValue - 1) * limitValue)
+                .limit(limitValue);
+        } else {
+            // Fetch all contestants if no limit or page provided
+            contestants = await Contestant.find({ season: seasonId });
+        }
     }
 
-    
-
     const totalContestants = await Contestant.countDocuments({ season: seasonId });
-    const totalPages = Math.ceil(totalContestants / limitValue);
+    const totalPages = limitValue ? Math.ceil(totalContestants / limitValue) : 1; // Default to 1 page if no pagination
 
-    if (contestants.length === 0 || !contestants) {
+    if (!contestants || contestants.length === 0) {
         return res.status(404).json({
             success: false,
             message: "No contestants found",
@@ -177,12 +182,12 @@ const seasonContestants = asyncHandler(async (req, res) => {
     return res.status(200).json({
         success: true,
         contestants,
-        pagination: {
+        pagination: limitValue ? {
             totalContestants,
             totalPages,
             currentPage: pageValue,
             limit: limitValue
-        }
+        } : null // No pagination data if limit and page are not provided
     });
 });
 
