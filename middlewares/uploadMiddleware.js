@@ -14,7 +14,7 @@ const storage = new CloudinaryStorage({
     cloudinary,
     params: {
       folder: 'StreetGotTalent',
-      allowedFormats: ['jpg', 'png', 'jpeg', 'gif'],
+      allowedFormats: ['jpg', 'png', 'jpeg'],
     },
   });
 

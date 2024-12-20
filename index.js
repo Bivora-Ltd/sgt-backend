@@ -26,7 +26,16 @@ app.use(morgan((tokens, req, res) => {
       timestamp: new Date().toISOString()
   });
 }));
-app.use(cors());
+const corOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  setHeaders: function (res, path, stat) {
+    res.setHeader("Cache-Control", "s-max-age=1, stale-while-revalidate");
+  },
+};
+app.use(cors(corOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
