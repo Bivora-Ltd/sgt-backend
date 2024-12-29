@@ -27,9 +27,15 @@ app.use(morgan((tokens, req, res) => {
   });
 }));
 const corOptions = {
-  origin: "*",
+  origin: "*", // Adjust this to specific domains in production
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["*"],
+  allowedHeaders: [
+    "Authorization",
+    "Content-Type",
+    "Cache-Control",
+    "Pragma",
+    "Expires",
+  ],
   credentials: true,
   setHeaders: function (res, path, stat) {
     res.setHeader("Cache-Control", "s-max-age=1, must-revalidate");
