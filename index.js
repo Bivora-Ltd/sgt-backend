@@ -29,10 +29,10 @@ app.use(morgan((tokens, req, res) => {
 const corOptions = {
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["*"],
   credentials: true,
   setHeaders: function (res, path, stat) {
-    res.setHeader("Cache-Control", "s-max-age=1, stale-while-revalidate");
+    res.setHeader("Cache-Control", "s-max-age=1, must-revalidate");
   },
 };
 app.use(cors(corOptions));
