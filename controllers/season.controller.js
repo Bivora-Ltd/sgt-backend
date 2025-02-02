@@ -97,7 +97,6 @@ const advanceSeason = asyncHandler(async (req, res) => {
                     let group = groups[(count - 1) % 4];  // Fixed group assignment
                     contestant.group = group;
                     contestant.status = "group";
-                    contestant.votes = 0;
                     const message = `
                         Congratulations ${contestant.name},\n 
                         You are part of the top 20 to advance to the group stage.\n
@@ -112,6 +111,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                 } else {
                     contestant.status = "evicted";
                 }
+                contestant.votes = 0;
                 await contestant.save();
                 count++;
             }
@@ -143,6 +143,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                     } else {
                         contestant.status = "evicted";
                     }
+                    contestant.votes = 0;
                     await contestant.save();
                 }
             }
@@ -173,6 +174,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                     } else {
                         contestant.status = "evicted";
                     }
+                    contestant.votes = 0;
                     await contestant.save();
                 }
             }
