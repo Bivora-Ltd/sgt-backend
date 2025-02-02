@@ -149,50 +149,56 @@ const seasonContestants = asyncHandler(async (req, res) => {
 
     const seasonId = season._id;
 
-    let pipeline = [
-        { $match: { season: seasonId } },
-        {
-            $addFields: {
-                statusOrder: {
-                    $switch: {
-                        branches: [
-                            { case: { $eq: ["$status", "audition"] }, then: 0 },
-                            { case: { $eq: ["$status", "group"] }, then: 1 },
-                            { case: { $eq: ["$status", "semi"] }, then: 2 },
-                            { case: { $eq: ["$status", "evicted"] }, then: 3 }
-                        ],
-                        default: 4
-                    }
-                }
-            }
-        },
-        { $sort: { statusOrder: 1, votes: -1 } }, // Sort by status order, then votes
-        { $project: { statusOrder: 0 } } // Remove extra field
-    ];
+    let pipeline = [];
 
-    if (limitValue && pageValue) {
+    // ✅ If leaderboard, sort by votes only
+    if (leaderboard) {
         pipeline.push(
-            { $skip: (pageValue - 1) * limitValue },
-            { $limit: limitValue }
+            { $match: { season: seasonId } },
+            { $sort: { votes: -1 } }
         );
+    } else {
+        // ✅ Fetch all contestants except evicted first
+        let nonEvictedPipeline = [
+            { $match: { season: seasonId, status: { $ne: "evicted" } } },
+            { $sort: { votes: -1 } }
+        ];
+
+        // ✅ Fetch evicted contestants separately
+        let evictedPipeline = [
+            { $match: { season: seasonId, status: "evicted" } },
+            { $sort: { votes: -1 } }
+        ];
+
+        let nonEvictedContestants = await Contestant.aggregate(nonEvictedPipeline);
+        let evictedContestants = await Contestant.aggregate(evictedPipeline);
+
+        let contestants = [...nonEvictedContestants, ...evictedContestants];
+
+        // ✅ Apply pagination
+        if (limitValue && pageValue) {
+            const startIndex = (pageValue - 1) * limitValue;
+            contestants = contestants.slice(startIndex, startIndex + limitValue);
+        }
+
+        const totalContestants = await Contestant.countDocuments({ season: seasonId });
+        const totalPages = limitValue ? Math.ceil(totalContestants / limitValue) : 1;
+
+        if (contestants.length === 0) {
+            return res.status(404).json({ success: false, message: "No contestants found" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            contestants,
+            pagination: limitValue
+                ? { totalContestants, totalPages, currentPage: pageValue, limit: limitValue }
+                : null
+        });
     }
 
     let contestants = await Contestant.aggregate(pipeline);
-
-    const totalContestants = await Contestant.countDocuments({ season: seasonId });
-    const totalPages = limitValue ? Math.ceil(totalContestants / limitValue) : 1;
-
-    if (contestants.length === 0) {
-        return res.status(404).json({ success: false, message: "No contestants found" });
-    }
-
-    return res.status(200).json({
-        success: true,
-        contestants,
-        pagination: limitValue
-            ? { totalContestants, totalPages, currentPage: pageValue, limit: limitValue }
-            : null
-    });
+    return res.status(200).json({ success: true, contestants });
 });
 
 
