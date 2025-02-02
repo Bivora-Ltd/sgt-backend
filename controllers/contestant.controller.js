@@ -149,28 +149,35 @@ const seasonContestants = asyncHandler(async (req, res) => {
 
     const seasonId = season._id;
 
-    // Define status order
-    const statusOrder = { audition: 0, group: 1, semi: 2, evicted: 3 };
-
-    let contestantsQuery = Contestant.find({ season: seasonId });
-
-    if (leaderboard) {
-        contestantsQuery = contestantsQuery.sort({ votes: -1 });
-    } else {
-        contestantsQuery = contestantsQuery.sort({
-            status: 1, // Sort alphabetically first
-            votes: -1  // Secondary sorting
-        });
-    }
+    let pipeline = [
+        { $match: { season: seasonId } },
+        {
+            $addFields: {
+                statusOrder: {
+                    $switch: {
+                        branches: [
+                            { case: { $eq: ["$status", "audition"] }, then: 0 },
+                            { case: { $eq: ["$status", "group"] }, then: 1 },
+                            { case: { $eq: ["$status", "semi"] }, then: 2 },
+                            { case: { $eq: ["$status", "evicted"] }, then: 3 }
+                        ],
+                        default: 4
+                    }
+                }
+            }
+        },
+        { $sort: { statusOrder: 1, votes: -1 } }, // Sort by status order, then votes
+        { $project: { statusOrder: 0 } } // Remove extra field
+    ];
 
     if (limitValue && pageValue) {
-        contestantsQuery = contestantsQuery.skip((pageValue - 1) * limitValue).limit(limitValue);
+        pipeline.push(
+            { $skip: (pageValue - 1) * limitValue },
+            { $limit: limitValue }
+        );
     }
 
-    let contestants = await contestantsQuery.lean();
-
-    // Manually sort by statusOrder
-    contestants.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+    let contestants = await Contestant.aggregate(pipeline);
 
     const totalContestants = await Contestant.countDocuments({ season: seasonId });
     const totalPages = limitValue ? Math.ceil(totalContestants / limitValue) : 1;
