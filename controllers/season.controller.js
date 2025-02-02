@@ -97,6 +97,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                     let group = groups[(count - 1) % 4];  // Fixed group assignment
                     contestant.group = group;
                     contestant.status = "group";
+                    contestant.votes = 0;
                     const message = `
                         Congratulations ${contestant.name},\n 
                         You are part of the top 20 to advance to the group stage.\n
@@ -129,6 +130,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                     const contestant = groupContestants[j];
                     if (j < 3) {  // Top 3 advance
                         contestant.status = "semi";
+                        contestant.votes = 0;
                         const message = `
                             Congratulations ${contestant.name},\n 
                             You've made it to the top 3 in <strong>${group}</strong> and are advancing to the semi-finals.\n
@@ -158,6 +160,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                     const contestant = groupContestants[j];
                     if (j === 0) {  // Only the top contestant from each group goes to the final
                         contestant.status = "final";
+                        contestant.votes = 0;
                         const message = `
                             Congratulations ${contestant.name},\n 
                             You've reached the finals as the top contestant from <strong>${group}</strong>.\n
