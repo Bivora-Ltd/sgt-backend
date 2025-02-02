@@ -130,14 +130,10 @@ const searchContestants = asyncHandler(async (req, res) => {
 
 const seasonContestants = asyncHandler(async (req, res) => {
     const { season_title: seasonTitle } = req.params;
-    const { limit, page, leaderboard } = req.query; // Read limit and page from query params
+    const { limit, page, leaderboard } = req.query; 
 
-    let limitValue, pageValue;
-
-    if (limit && page) {
-        limitValue = parseInt(limit);
-        pageValue = parseInt(page);
-    }
+    let limitValue = limit ? parseInt(limit) : null;
+    let pageValue = page ? parseInt(page) : null;
 
     let season;
     if (seasonTitle === "current") {
@@ -148,51 +144,50 @@ const seasonContestants = asyncHandler(async (req, res) => {
     }
 
     if (!season) {
-        res.status(404);
-        throw new Error("Season not found");
+        return res.status(404).json({ success: false, message: "Season not found" });
     }
 
     const seasonId = season._id;
 
-    let contestants;
+    // Define status order
+    const statusOrder = { audition: 0, group: 1, semi: 2, evicted: 3 };
+
+    let contestantsQuery = Contestant.find({ season: seasonId });
+
     if (leaderboard) {
-        contestants = await Contestant.find({ season: seasonId })
-            .sort({ votes: -1 });
+        contestantsQuery = contestantsQuery.sort({ votes: -1 });
     } else {
-        if (limitValue && pageValue) {
-            contestants = await Contestant.find({ season: seasonId })
-                .skip((pageValue - 1) * limitValue)
-                .limit(limitValue)
-                .sort({
-                    status: { $cond: { if: { $eq: ["$status", "evicted"] }, then: 1, else: 0 } }
-                  });
-        } else {
-            // Fetch all contestants if no limit or page provided
-            contestants = await Contestant.find({ season: seasonId });
-        }
+        contestantsQuery = contestantsQuery.sort({
+            status: 1, // Sort alphabetically first
+            votes: -1  // Secondary sorting
+        });
     }
 
-    const totalContestants = await Contestant.countDocuments({ season: seasonId });
-    const totalPages = limitValue ? Math.ceil(totalContestants / limitValue) : 1; // Default to 1 page if no pagination
+    if (limitValue && pageValue) {
+        contestantsQuery = contestantsQuery.skip((pageValue - 1) * limitValue).limit(limitValue);
+    }
 
-    if (!contestants || contestants.length === 0) {
-        return res.status(404).json({
-            success: false,
-            message: "No contestants found",
-        });
+    let contestants = await contestantsQuery.lean();
+
+    // Manually sort by statusOrder
+    contestants.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+
+    const totalContestants = await Contestant.countDocuments({ season: seasonId });
+    const totalPages = limitValue ? Math.ceil(totalContestants / limitValue) : 1;
+
+    if (contestants.length === 0) {
+        return res.status(404).json({ success: false, message: "No contestants found" });
     }
 
     return res.status(200).json({
         success: true,
         contestants,
-        pagination: limitValue ? {
-            totalContestants,
-            totalPages,
-            currentPage: pageValue,
-            limit: limitValue
-        } : null // No pagination data if limit and page are not provided
+        pagination: limitValue
+            ? { totalContestants, totalPages, currentPage: pageValue, limit: limitValue }
+            : null
     });
 });
+
 
 const contactUs = asyncHandler(async(req,res) => {
     const {name, email, message, subject} = req.body;
