@@ -162,7 +162,11 @@ const seasonContestants = asyncHandler(async (req, res) => {
         if (limitValue && pageValue) {
             contestants = await Contestant.find({ season: seasonId })
                 .skip((pageValue - 1) * limitValue)
-                .limit(limitValue);
+                .limit(limitValue)
+                .sort({
+                    status: { $cond: { if: { $eq: ["$status", "evicted"] }, then: 1, else: 0 } },
+                    votes: -1 // Optional: Sort by votes within each group
+                  });
         } else {
             // Fetch all contestants if no limit or page provided
             contestants = await Contestant.find({ season: seasonId });
