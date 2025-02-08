@@ -161,8 +161,14 @@ const seasonContestants = asyncHandler(async (req, res) => {
         // ✅ Fetch all contestants except evicted first
         let nonEvictedPipeline = [
             { $match: { season: seasonId, status: { $ne: "evicted" } } },
-            { $sort: { votes: -1 } }
+            { 
+                $sort: { 
+                    group: 1, // Groups A-D will appear first (MongoDB sorts nulls last)
+                    votes: -1  // Within each group, contestants are sorted by votes in descending order
+                } 
+            }
         ];
+        
 
         // ✅ Fetch evicted contestants separately
         let evictedPipeline = [
