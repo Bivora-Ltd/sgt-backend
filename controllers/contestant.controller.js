@@ -187,7 +187,7 @@ const seasonContestants = asyncHandler(async (req, res) => {
             contestants = contestants.slice(startIndex, startIndex + limitValue);
         }
 
-        const totalContestants = await Contestant.countDocuments({ season: seasonId });
+        const totalContestants = contestants.length();
         const totalPages = limitValue ? Math.ceil(totalContestants / limitValue) : 1;
 
         if (contestants.length === 0) {
