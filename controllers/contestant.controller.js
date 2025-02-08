@@ -130,7 +130,7 @@ const searchContestants = asyncHandler(async (req, res) => {
 
 const seasonContestants = asyncHandler(async (req, res) => {
     const { season_title: seasonTitle } = req.params;
-    const { limit, page, leaderboard } = req.query; 
+    const { limit=5, page=1, leaderboard } = req.query; 
 
     let limitValue = limit ? parseInt(limit) : null;
     let pageValue = page ? parseInt(page) : null;
