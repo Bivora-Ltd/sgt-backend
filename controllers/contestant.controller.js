@@ -187,10 +187,10 @@ const seasonContestants = asyncHandler(async (req, res) => {
             contestants = contestants.slice(startIndex, startIndex + limitValue);
         }
 
-        const totalContestants = contestants.length();
+        const totalContestants = contestants.length;
         const totalPages = limitValue ? Math.ceil(totalContestants / limitValue) : 1;
 
-        if (contestants.length === 0) {
+        if (totalContestants === 0) {
             return res.status(404).json({ success: false, message: "No contestants found" });
         }
 
