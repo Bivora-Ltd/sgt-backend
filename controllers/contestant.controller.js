@@ -181,16 +181,16 @@ const seasonContestants = asyncHandler(async (req, res) => {
 
         let contestants = [...nonEvictedContestants];
 
+        const totalContestants = contestants.length;
         // ✅ Apply pagination
         if (limitValue && pageValue) {
             const startIndex = (pageValue - 1) * limitValue;
             contestants = contestants.slice(startIndex, startIndex + limitValue);
         }
 
-        const totalContestants = contestants.length;
         const totalPages = limitValue ? Math.ceil(totalContestants / limitValue) : 1;
 
-        if (totalContestants === 0) {
+        if (contestants.length === 0) {
             return res.status(404).json({ success: false, message: "No contestants found" });
         }
 
