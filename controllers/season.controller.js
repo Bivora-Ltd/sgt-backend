@@ -143,7 +143,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                     } else {
                         contestant.status = "evicted";
                     }
-                    contestant.votes = 0;
+                    // contestant.votes = 0;
                     await contestant.save();
                 }
             }
@@ -174,7 +174,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
                     } else {
                         contestant.status = "evicted";
                     }
-                    contestant.votes = 0;
+                    // contestant.votes = 0;
                     await contestant.save();
                 }
             }
