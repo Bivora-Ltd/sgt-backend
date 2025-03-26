@@ -26,6 +26,6 @@ const paymentSchema = Mongoose.Schema({
         unique: true,
         required: true
     }
-});
+},{timestamps:true});
 
 module.exports = Mongoose.model("Payment",paymentSchema);
