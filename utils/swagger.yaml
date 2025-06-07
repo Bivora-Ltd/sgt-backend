@@ -6,7 +6,7 @@ info:
   contact:
     email: ckamsi04@gmail.com
 servers:
-  - url: https://api.streetgottalent.com/api/v1
+  - url: https://streetgottalent.com/api/v1
 
 schemes: [https]
 
