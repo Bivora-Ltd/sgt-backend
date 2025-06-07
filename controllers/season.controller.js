@@ -57,7 +57,7 @@ const getSeason = asyncHandler(async (req, res) => {
   });
 });
 
-const getSeasonWinner = asyncHandler(async (req, res) => {
+const getSeasonWinners = asyncHandler(async (req, res) => {
   const { season_id: seasonId } = req.params;
   const season = await Season.findById(seasonId);
   if (!season) {
@@ -68,17 +68,25 @@ const getSeasonWinner = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("Season is still ongoing");
   }
-  const winner = await Contestant.findOne({
+  // winners includes every contestant not evicted or eliminated
+  const winners = [];
+  const contestants = await Contestant.find({
     season: season._id,
-    status: "winner",
+    status: { $in: ["winner", "second", "third", "fourth"] },
   });
-  if (!winner) {
-    return res.status(404).json({ message: "No winner found for this season" });
-  }
+  contestants.forEach((contestant) => {
+    winners.push({
+      name: contestant.name,
+      status: contestant.status,
+      votes: contestant.votes,
+    });
+  });
   return res.status(200).json({
     success: true,
-    winner,
-    season,
+    data: {
+      winners,
+      season,
+    },
   });
 });
 
@@ -317,5 +325,5 @@ module.exports = {
   allSeasons,
   getSeason,
   updateSeason,
-  getSeasonWinner,
+  getSeasonWinners,
 };
