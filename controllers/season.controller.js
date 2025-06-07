@@ -75,11 +75,7 @@ const getSeasonWinners = asyncHandler(async (req, res) => {
     status: { $in: ["winner", "second", "third", "fourth"] },
   });
   contestants.forEach((contestant) => {
-    winners.push({
-      name: contestant.name,
-      status: contestant.status,
-      votes: contestant.votes,
-    });
+    winners.push(contestant);
   });
   return res.status(200).json({
     success: true,
