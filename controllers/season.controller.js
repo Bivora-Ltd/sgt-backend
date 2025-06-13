@@ -109,10 +109,10 @@ const advanceSeason = asyncHandler(async (req, res) => {
           contestant.group = group;
           contestant.status = "group";
           const message = `
-                        Congratulations ${contestant.name},\n 
-                        You are part of the top 20 to advance to the group stage.\n
-                        See you at the next stage, where you'll battle it out in <strong>${group}</strong>.\n
-                        Date and time will be announced on our official channels.`;
+            Congratulations ${contestant.name},\n 
+            You are part of the top 20 to advance to the group stage.\n
+            See you at the next stage, where you'll battle it out in <strong>${group}</strong>.\n
+            Date and time will be announced on our official channels.`;
 
           try {
             await sendEmail(
@@ -150,13 +150,11 @@ const advanceSeason = asyncHandler(async (req, res) => {
         for (let j = 0; j < groupContestants.length; j++) {
           const contestant = groupContestants[j];
           if (j < 3) {
-            // Top 3 advance
             contestant.status = "semi";
-            contestant.votes = 0;
             const message = `
-                            Congratulations ${contestant.name},\n 
-                            You've made it to the top 3 in <strong>${group}</strong> and are advancing to the semi-finals.\n
-                            Stay tuned for the next stage.`;
+                Congratulations ${contestant.name},\n 
+                You've made it to the top 3 in <strong>${group}</strong> and are advancing to the semi-finals.\n
+                Stay tuned for the next stage.`;
             try {
               await sendEmail(
                 contestant.email,
@@ -193,11 +191,10 @@ const advanceSeason = asyncHandler(async (req, res) => {
           if (j === 0) {
             // Only the top contestant from each group goes to the final
             contestant.status = "final";
-            contestant.votes = 0;
             const message = `
-                            Congratulations ${contestant.name},\n 
-                            You've reached the finals as the top contestant from <strong>${group}</strong>.\n
-                            Prepare for the final showdown.`;
+                Congratulations ${contestant.name},\n 
+                You've reached the finals as the top contestant from <strong>${group}</strong>.\n
+                Prepare for the final showdown.`;
             try {
               await sendEmail(
                 contestant.email,
@@ -212,7 +209,6 @@ const advanceSeason = asyncHandler(async (req, res) => {
           } else {
             contestant.status = "evicted";
           }
-          // contestant.votes = 0;
           await contestant.save();
         }
       }
@@ -234,9 +230,9 @@ const advanceSeason = asyncHandler(async (req, res) => {
           case 0:
             contestant.status = "winner";
             const winnerMessage = `
-                            Congratulations ${contestant.name},\n 
-                            You are the winner of Street Got Talent ${currentSeason.title}.\n
-                            Further steps will be communicated via our official channels.`;
+                Congratulations ${contestant.name},\n 
+                You are the winner of Street Got Talent ${currentSeason.title}.\n
+                Further steps will be communicated via our official channels.`;
             try {
               await sendEmail(
                 contestant.email,
