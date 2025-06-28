@@ -23,10 +23,10 @@ const newStreetFood = asyncHandler(async(req,res)=>{
 });
 
 const editStreetFood = asyncHandler(async(req,res)=>{
-    const {streetfoodId} = req.params;
+    const {streetFoodId} = req.params;
     const streetFoodObject = {};
     const {name, price, vote_power: votePower} = req.body;
-    const streetFood = await StreetFood.findById(streetfoodId);
+    const streetFood = await StreetFood.findById(streetFoodId);
     if (req.file) {
         streetFoodObject.imageUrl = req.file.path;
     };
