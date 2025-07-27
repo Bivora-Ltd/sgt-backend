@@ -171,15 +171,15 @@ const seasonContestants = asyncHandler(async (req, res) => {
         
 
         // ✅ Fetch evicted contestants separately
-        // let evictedPipeline = [
-        //     { $match: { season: seasonId, status: "evicted" } },
-        //     { $sort: { votes: -1 } }
-        // ];
+        let evictedPipeline = [
+             { $match: { season: seasonId, status: "evicted" } },
+             { $sort: { votes: -1 } }
+         ];
 
         let nonEvictedContestants = await Contestant.aggregate(nonEvictedPipeline);
-        // let evictedContestants = await Contestant.aggregate(evictedPipeline);
+        let evictedContestants = await Contestant.aggregate(evictedPipeline);
 
-        let contestants = [...nonEvictedContestants];
+        let contestants = [...nonEvictedContestants, ...evictedContestants];
 
         const totalContestants = contestants.length;
         // ✅ Apply pagination
