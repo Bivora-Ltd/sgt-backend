@@ -5,7 +5,7 @@ const Season = require("../models/season.model");
 require("dotenv").config();
 
 const recordPayment = asyncHandler(async (req, res) => {
-  const { reference } = req.body;
+  const { reference, metadata } = req.body;
 
   try {
     const verificationResponse = await fetch(
@@ -29,7 +29,7 @@ const recordPayment = asyncHandler(async (req, res) => {
       });
     }
 
-    const { amount, customer, metadata } = verificationData.data;
+    const { amount, customer } = verificationData.data;
 
     if (!customer || !metadata) {
       return res.status(400).json({
@@ -38,9 +38,23 @@ const recordPayment = asyncHandler(async (req, res) => {
       });
     }
 
+    // check missing metadata fields and return missing fields
+    const requiredFields = ["name", "paymentFor", "channel", "currency"];
+    const missingFields = requiredFields.filter(
+      (field) => !metadata[field] || metadata[field].trim() === ""
+    );
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing metadata fields: ${missingFields.join(", ")}`,
+      });
+    }
+
     const email = customer.email;
     const name = metadata.name;
     const paymentFor = metadata.paymentFor;
+    const channel = metadata.channel;
+    const currency = metadata.currency;
 
     let currentSeason = await Season.find({ current: true }).sort({ _id: -1 });
     currentSeason = currentSeason[0];
@@ -61,7 +75,9 @@ const recordPayment = asyncHandler(async (req, res) => {
       metaData: {
         paymentFor,
         name,
-        contestantId: metadata.contestantId || null, // Optional contestant ID
+        contestantId: metadata.contestantId || null,
+        channel,
+        currency: currency || "NGN",
       },
     });
 

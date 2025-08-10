@@ -7,7 +7,7 @@ const paymentRoute = express.Router();
 
 paymentRoute.post(
   "/verify",
-  checkForMissingFields(["reference"]),
+  checkForMissingFields(["reference", "metadata"]),
   recordPayment
 );
 

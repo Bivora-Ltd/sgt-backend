@@ -8,16 +8,25 @@ const paymentSchema = Mongoose.Schema(
     },
     metaData: {
       paymentFor: {
+        // enum voting, registration, donation
         type: String,
         required: true,
+        enum: ["voting", "registration", "donation"],
       },
       name: {
         type: String,
         required: true,
       },
-      comtestantId: {
+      contestantId: {
         type: Mongoose.Types.ObjectId,
         ref: "Contestant",
+      },
+      channel: {
+        type: String,
+      },
+      currency: {
+        type: String,
+        default: "NGN",
       },
     },
     email: {
@@ -34,7 +43,9 @@ const paymentSchema = Mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 module.exports = Mongoose.model("Payment", paymentSchema);
