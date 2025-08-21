@@ -5,212 +5,238 @@ const asyncHandler = require("express-async-handler");
 const sendEmail = require("../utils/mail");
 require("dotenv").config();
 
-const contestantRegister = asyncHandler(async(req,res)=>{
-    if (!req.file) {
-        return res.status(400).json({ success: false, message: 'No file uploaded' });
-      }
-    const {name,phone: phoneNumber,instagram,tiktok,email,performance_type: performanceType} = req.body;
-    const currentSeason = await Season.find({current:true}).sort({_id: -1});
-    if(!currentSeason[0] || currentSeason[0].acceptance !== true || new Date() < new Date(currentSeason[0].applicationDeadline)){
-        res.status(400);
-        throw new Error("Application can not be accepted at the moment");
-    }
-    const imageUrl = req.file.path;
-    const instagramUrl = `https://www.instagram.com/${instagram}`;
-    const tiktokUrl = `https://www.tiktok.com/@${tiktok}`;
-    const socials = {
-        tiktok: tiktokUrl,
-        instagram: instagramUrl
-    }
-    const contestant = await Contestant.create({
-        name,
-        phoneNumber,
-        socials,
-        email,
-        performanceType,
-        imageUrl,
-        season: currentSeason[0]._id
-    });
-    
-    if(!contestant){
-        res.status(400);
-        throw new Error("Error registering contestant")
-    };
-    const currentContestants = await Contestant.find({season:currentSeason[0]._id})
-    if(currentSeason[0].limit && currentContestants.length > currentSeason[0].limit - 1){
-        currentSeason[0].acceptance = false;
-        currentSeason[0].save();
-    }
-    const message = `
+const contestantRegister = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    return res
+      .status(400)
+      .json({ success: false, message: "No file uploaded" });
+  }
+  const {
+    name,
+    phone: phoneNumber,
+    instagram,
+    tiktok,
+    email,
+    performance_type: performanceType,
+    description,
+  } = req.body;
+  const currentSeason = await Season.find({ current: true }).sort({ _id: -1 });
+  if (
+    !currentSeason[0] ||
+    currentSeason[0].acceptance !== true ||
+    new Date() < new Date(currentSeason[0].applicationDeadline)
+  ) {
+    res.status(400);
+    throw new Error("Application can not be accepted at the moment");
+  }
+  const imageUrl = req.file.path;
+  const instagramUrl = `https://www.instagram.com/${instagram}`;
+  const tiktokUrl = `https://www.tiktok.com/@${tiktok}`;
+  const socials = {
+    tiktok: tiktokUrl,
+    instagram: instagramUrl,
+  };
+  const contestant = await Contestant.create({
+    name,
+    phoneNumber,
+    socials,
+    email,
+    performanceType,
+    imageUrl,
+    description,
+    season: currentSeason[0]._id,
+  });
+
+  if (!contestant) {
+    res.status(400);
+    throw new Error("Error registering contestant");
+  }
+  const currentContestants = await Contestant.find({
+    season: currentSeason[0]._id,
+  });
+  if (
+    currentSeason[0].limit &&
+    currentContestants.length > currentSeason[0].limit - 1
+  ) {
+    currentSeason[0].acceptance = false;
+    currentSeason[0].save();
+  }
+  const message = `
         Hello ${name} Your registration request for Street Got Talent 
         ${currentSeason[0].title} has been approved your registration Id 
         is <strong>${contestant._id}</strong>. </br> 
         See you at the Audition </br>
         Further information will be communicated on our social media handles`;
 
-    await sendEmail(email,"Registration Successful",message);
-    return res.status(200).json({
-        success: true,
-        message: "Contestant details submitted you will receive a mail shortly",
-        contestant
-    })
+  await sendEmail(email, "Registration Successful", message);
+  return res.status(200).json({
+    success: true,
+    message: "Contestant details submitted you will receive a mail shortly",
+    contestant,
+  });
 });
 
-const eliminateContestant = asyncHandler(async(req,res)=>{
-    const {id} = req.params;
-    const contestant = await Contestant.findById(id);
-    if(! contestant){
-        res.status(404)
-        throw new Error("Contestant not found")
-    }
-    contestant.status = "evicted";
-    await contestant.save();
-    return res.status(200).json({
-        status: true,
-        message: "You evicted contestant "+ contestant.name
-    });
-})
+const eliminateContestant = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const contestant = await Contestant.findById(id);
+  if (!contestant) {
+    res.status(404);
+    throw new Error("Contestant not found");
+  }
+  contestant.status = "evicted";
+  await contestant.save();
+  return res.status(200).json({
+    status: true,
+    message: "You evicted contestant " + contestant.name,
+  });
+});
 
 const searchContestants = asyncHandler(async (req, res) => {
-    const { season_title: seasonTitle } = req.params;
-    const { limit = 20, page = 1, name, type } = req.query; // Query parameters for pagination and search criteria
+  const { season_title: seasonTitle } = req.params;
+  const { limit = 20, page = 1, name, type } = req.query; // Query parameters for pagination and search criteria
 
-    const limitValue = parseInt(limit);
-    const pageValue = parseInt(page);
+  const limitValue = parseInt(limit);
+  const pageValue = parseInt(page);
 
-    let season;
-    if (seasonTitle === "current") {
-        season = await Season.find({ current: true }).sort({ _id: -1 }).limit(1);
-        season = season[0];
-    } else {
-        season = await Season.findOne({ title: seasonTitle });
-    }
+  let season;
+  if (seasonTitle === "current") {
+    season = await Season.find({ current: true }).sort({ _id: -1 }).limit(1);
+    season = season[0];
+  } else {
+    season = await Season.findOne({ title: seasonTitle });
+  }
 
-    if (!season) {
-        res.status(404);
-        throw new Error("Season not found");
-    }
+  if (!season) {
+    res.status(404);
+    throw new Error("Season not found");
+  }
 
-    const seasonId = season._id;
+  const seasonId = season._id;
 
-    // Build the query object based on the search criteria
-    const query = { season: seasonId };
-    if (name) {
-        query.name = { $regex: name.trim(), $options: 'i' }; // Case-insensitive search by name
-    }
-    if (type) {
-        query.performanceType = { $regex: type.trim(), $options: 'i' }; // Case-insensitive search by performance type
-    }
+  // Build the query object based on the search criteria
+  const query = { season: seasonId };
+  if (name) {
+    query.name = { $regex: name.trim(), $options: "i" }; // Case-insensitive search by name
+  }
+  if (type) {
+    query.performanceType = { $regex: type.trim(), $options: "i" }; // Case-insensitive search by performance type
+  }
 
-    const contestants = await Contestant.find(query)
-        .skip((pageValue - 1) * limitValue)
-        .limit(limitValue);
+  const contestants = await Contestant.find(query)
+    .skip((pageValue - 1) * limitValue)
+    .limit(limitValue);
 
-    const totalContestants = await Contestant.countDocuments(query);
-    const totalPages = Math.ceil(totalContestants / limitValue);
+  const totalContestants = await Contestant.countDocuments(query);
+  const totalPages = Math.ceil(totalContestants / limitValue);
 
-    if (contestants.length === 0) {
-        return res.status(404).json({
-            success: false,
-            message: "No contestants found",
-        });
-    }
-
-    return res.status(200).json({
-        success: true,
-        contestants,
-        pagination: {
-            totalContestants,
-            totalPages,
-            currentPage: pageValue,
-            limit: limitValue
-        }
+  if (contestants.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No contestants found",
     });
+  }
+
+  return res.status(200).json({
+    success: true,
+    contestants,
+    pagination: {
+      totalContestants,
+      totalPages,
+      currentPage: pageValue,
+      limit: limitValue,
+    },
+  });
 });
 
 const seasonContestants = asyncHandler(async (req, res) => {
-    const { season_title: seasonTitle } = req.params;
-    const { limit, page, leaderboard } = req.query; 
+  const { season_title: seasonTitle } = req.params;
+  const { limit, page, leaderboard } = req.query;
 
-    let limitValue = limit ? parseInt(limit) : null;
-    let pageValue = page ? parseInt(page) : null;
+  let limitValue = limit ? parseInt(limit) : null;
+  let pageValue = page ? parseInt(page) : null;
 
-    let season;
-    if (seasonTitle === "current") {
-        season = await Season.find({ current: true }).sort({ _id: -1 }).limit(1);
-        season = season[0];
-    } else {
-        season = await Season.findOne({ title: seasonTitle });
+  let season;
+  if (seasonTitle === "current") {
+    season = await Season.find({ current: true }).sort({ _id: -1 }).limit(1);
+    season = season[0];
+  } else {
+    season = await Season.findOne({ title: seasonTitle });
+  }
+
+  if (!season) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Season not found" });
+  }
+
+  const seasonId = season._id;
+
+  let pipeline = [];
+
+  // ✅ If leaderboard, sort by votes only
+  if (leaderboard) {
+    pipeline.push({ $match: { season: seasonId } }, { $sort: { votes: -1 } });
+  } else {
+    // ✅ Fetch all contestants except evicted first
+    let nonEvictedPipeline = [
+      { $match: { season: seasonId, status: { $ne: "evicted" } } },
+      {
+        $sort: {
+          group: 1, // Groups A-D will appear first (MongoDB sorts nulls last)
+          votes: -1, // Within each group, contestants are sorted by votes in descending order
+        },
+      },
+    ];
+
+    // ✅ Fetch evicted contestants separately
+    let evictedPipeline = [
+      { $match: { season: seasonId, status: "evicted" } },
+      { $sort: { votes: -1 } },
+    ];
+
+    let nonEvictedContestants = await Contestant.aggregate(nonEvictedPipeline);
+    let evictedContestants = await Contestant.aggregate(evictedPipeline);
+
+    let contestants = [...nonEvictedContestants, ...evictedContestants];
+
+    const totalContestants = contestants.length;
+    // ✅ Apply pagination
+    if (limitValue && pageValue) {
+      const startIndex = (pageValue - 1) * limitValue;
+      contestants = contestants.slice(startIndex, startIndex + limitValue);
     }
 
-    if (!season) {
-        return res.status(404).json({ success: false, message: "Season not found" });
+    const totalPages = limitValue
+      ? Math.ceil(totalContestants / limitValue)
+      : 1;
+
+    if (contestants.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No contestants found" });
     }
 
-    const seasonId = season._id;
+    return res.status(200).json({
+      success: true,
+      contestants,
+      pagination: limitValue
+        ? {
+            totalContestants,
+            totalPages,
+            currentPage: pageValue,
+            limit: limitValue,
+          }
+        : null,
+    });
+  }
 
-    let pipeline = [];
-
-    // ✅ If leaderboard, sort by votes only
-    if (leaderboard) {
-        pipeline.push(
-            { $match: { season: seasonId } },
-            { $sort: { votes: -1 } }
-        );
-    } else {
-        // ✅ Fetch all contestants except evicted first
-        let nonEvictedPipeline = [
-            { $match: { season: seasonId, status: { $ne: "evicted" } } },
-            { 
-                $sort: { 
-                    group: 1, // Groups A-D will appear first (MongoDB sorts nulls last)
-                    votes: -1  // Within each group, contestants are sorted by votes in descending order
-                } 
-            }
-        ];
-        
-
-        // ✅ Fetch evicted contestants separately
-        let evictedPipeline = [
-             { $match: { season: seasonId, status: "evicted" } },
-             { $sort: { votes: -1 } }
-         ];
-
-        let nonEvictedContestants = await Contestant.aggregate(nonEvictedPipeline);
-        let evictedContestants = await Contestant.aggregate(evictedPipeline);
-
-        let contestants = [...nonEvictedContestants, ...evictedContestants];
-
-        const totalContestants = contestants.length;
-        // ✅ Apply pagination
-        if (limitValue && pageValue) {
-            const startIndex = (pageValue - 1) * limitValue;
-            contestants = contestants.slice(startIndex, startIndex + limitValue);
-        }
-
-        const totalPages = limitValue ? Math.ceil(totalContestants / limitValue) : 1;
-
-        if (contestants.length === 0) {
-            return res.status(404).json({ success: false, message: "No contestants found" });
-        }
-
-        return res.status(200).json({
-            success: true,
-            contestants,
-            pagination: limitValue
-                ? { totalContestants, totalPages, currentPage: pageValue, limit: limitValue }
-                : null
-        });
-    }
-
-    let contestants = await Contestant.aggregate(pipeline);
-    return res.status(200).json({ success: true, contestants });
+  let contestants = await Contestant.aggregate(pipeline);
+  return res.status(200).json({ success: true, contestants });
 });
 
-
-const contactUs = asyncHandler(async(req,res) => {
-    const {name, email, message, subject} = req.body;
-    const _message = `
+const contactUs = asyncHandler(async (req, res) => {
+  const { name, email, message, subject } = req.body;
+  const _message = `
         <h5>You have new enquiry</h5>
         <ul>
             <li>Name: ${name}</li>
@@ -220,79 +246,82 @@ const contactUs = asyncHandler(async(req,res) => {
         <div>"${message}"</div>
     `;
 
-    await sendEmail("xpat@streetgottalent.com",subject,_message);
-    
-    return res.status(200).json({
-        success: true,
-        message: "Your enquiry has been submitted \n expect a response from us soon"
-    })
+  await sendEmail("xpat@streetgottalent.com", subject, _message);
+
+  return res.status(200).json({
+    success: true,
+    message:
+      "Your enquiry has been submitted \n expect a response from us soon",
+  });
 });
 
 const getContestant = asyncHandler(async (req, res) => {
-    const { season_title: seasonTitle, contestant_id: contestantId } = req.params;
+  const { season_title: seasonTitle, contestant_id: contestantId } = req.params;
 
-    let season;
-    if (seasonTitle === "current") {
-        season = await Season.find({ current: true }).sort({ _id: -1 }).limit(1);
-        season = season[0];
-    } else {
-        season = await Season.findOne({ title: seasonTitle });
-    }
+  let season;
+  if (seasonTitle === "current") {
+    season = await Season.find({ current: true }).sort({ _id: -1 }).limit(1);
+    season = season[0];
+  } else {
+    season = await Season.findOne({ title: seasonTitle });
+  }
 
-    if (!season) {
-        res.status(404);
-        throw new Error("Season not found");
-    }
+  if (!season) {
+    res.status(404);
+    throw new Error("Season not found");
+  }
 
-    const seasonId = season._id;
-    const contestant = await Contestant.findOne({$and:[{season: seasonId},{_id: contestantId}]});
+  const seasonId = season._id;
+  const contestant = await Contestant.findOne({
+    $and: [{ season: seasonId }, { _id: contestantId }],
+  });
 
-    if (!contestant) {
-        res.status(404);
-        throw new Error("Contestant not found");
-    }
+  if (!contestant) {
+    res.status(404);
+    throw new Error("Contestant not found");
+  }
 
-    return res.status(200).json({
-        success: true,
-        contestant,
-    });
+  return res.status(200).json({
+    success: true,
+    contestant,
+  });
 });
 
-const voteContestant = asyncHandler(async (req,res)=>{
-    const {contestant,streetfood, qty} = req.body;
-    const _contestant = await Contestant.findById(contestant);
-    
-    if(!_contestant){
-        res.status(404);
-        throw new Error("Contestant not found");
-    }
-    if(contestant.status == "evicted" || contestant.status == "eliminated"){
-        res.status(400);
-        throw new Error("You can not vote for an evicted contestant ");
-    }
-    const _streetFood = await StreetFood.findById(streetfood);
-    
-    if(!_streetFood){
-        res.status(400);
-        throw new Error("Street Food not found");
-    }
-    const votePower = parseInt(_streetFood.votePower) * qty;
+const voteContestant = asyncHandler(async (req, res) => {
+  const { contestant, streetfood, qty } = req.body;
+  const _contestant = await Contestant.findById(contestant);
 
-    _contestant.votes += votePower;
-    await _contestant.save();
-    return res.status(200).json({
-        success: true,
-        message: "Vote submitted successfully",
-        contestant: _contestant
-    });
-})
+  if (!_contestant) {
+    res.status(404);
+    throw new Error("Contestant not found");
+  }
+  if (contestant.status == "evicted" || contestant.status == "eliminated") {
+    res.status(400);
+    throw new Error("You can not vote for an evicted contestant ");
+  }
+  const _streetFood = await StreetFood.findById(streetfood);
+
+  if (!_streetFood) {
+    res.status(400);
+    throw new Error("Street Food not found");
+  }
+  const votePower = parseInt(_streetFood.votePower) * qty;
+
+  _contestant.votes += votePower;
+  await _contestant.save();
+  return res.status(200).json({
+    success: true,
+    message: "Vote submitted successfully",
+    contestant: _contestant,
+  });
+});
 
 module.exports = {
-    contestantRegister,
-    searchContestants,
-    seasonContestants,
-    getContestant,
-    contactUs,
-    voteContestant,
-    eliminateContestant
-}
+  contestantRegister,
+  searchContestants,
+  seasonContestants,
+  getContestant,
+  contactUs,
+  voteContestant,
+  eliminateContestant,
+};
