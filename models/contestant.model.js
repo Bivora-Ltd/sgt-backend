@@ -48,7 +48,6 @@ const contestantSchema = Mongoose.Schema(
     },
     description: {
       type: String,
-      required: true,
     },
   },
   {
