@@ -212,8 +212,12 @@ const seasonContestants = asyncHandler(async (req, res) => {
 
     if (contestants.length === 0) {
       return res
-        .status(404)
-        .json({ success: false, message: "No contestants found" });
+        .status(200)
+        .json({
+          success: false,
+          message: "No contestants found",
+          contestants: [],
+        });
     }
 
     return res.status(200).json({
