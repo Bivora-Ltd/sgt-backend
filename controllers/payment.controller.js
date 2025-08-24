@@ -108,6 +108,19 @@ const history = asyncHandler(async (req, res) => {
     const filter = {};
     if (season) {
       filter.season = season;
+    } else {
+      let currentSeason = await Season.find({ current: true }).sort({
+        _id: -1,
+      });
+      currentSeason = currentSeason[0];
+      if (!currentSeason) {
+        return res.status(400).json({
+          success: false,
+          message: "No season is in progress",
+        });
+      }
+
+      filter.season = currentSeason._id;
     }
     if (contestant) {
       filter["metaData.contestantId"] = contestant;
@@ -119,9 +132,10 @@ const history = asyncHandler(async (req, res) => {
       .populate("season", "name current")
       .populate("metaData.contestantId", "name");
     if (!payments || payments.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         success: false,
         message: "No payment history found",
+        payments: [],
       });
     }
     res.status(200).json({
