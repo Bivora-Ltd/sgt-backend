@@ -100,6 +100,7 @@ const advanceSeason = asyncHandler(async (req, res) => {
     case "audition":
       const contestants = await Contestant.find({
         season: currentSeason._id,
+        status: "audition",
       }).sort({ votes: -1 });
       let count = 1;
       for (let i = 0; i < contestants.length; i++) {
