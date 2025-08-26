@@ -36,6 +36,7 @@ const paymentSchema = Mongoose.Schema(
     season: {
       type: Mongoose.Types.ObjectId,
       ref: "Season",
+      default: null,
     },
     reference: {
       type: String,

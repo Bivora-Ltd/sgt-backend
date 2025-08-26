@@ -58,14 +58,14 @@ const recordPayment = asyncHandler(async (req, res) => {
 
     let currentSeason = await Season.find({ current: true }).sort({ _id: -1 });
     currentSeason = currentSeason[0];
-    if (!currentSeason) {
+    if (!currentSeason && metadata.paymentFor !== "donation") {
       return res.status(400).json({
         success: false,
         message: "No season is in progress",
       });
     }
 
-    const season = currentSeason._id;
+    const season = currentSeason._id || null;
 
     const newPayment = await Payment.create({
       email,
