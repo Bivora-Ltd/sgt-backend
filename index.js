@@ -52,7 +52,7 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerJsDocs));
 app.use("/api", (req, res) => {
   return res.status(404).json({
     success: false,
-    message: "API route not found",
+    message: "API route not found at all",
   });
 });
 
