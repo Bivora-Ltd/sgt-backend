@@ -52,6 +52,17 @@ app.use(errorHandler);
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerJsDocs));
 
+const path = require("path");
+
+// Serve frontend build (React/Vue/etc.)
+app.use(express.static(path.join(__dirname, "client-build")));
+
+app.get("*", (req, res) => {
+  // Send index.html for all non-API routes
+  res.sendFile(path.join(__dirname, "client-build", "index.html"));
+});
+
+
 app.use((req, res) => {
   return res.status(404).json({
     success: false,
