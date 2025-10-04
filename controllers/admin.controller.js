@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 // Desc Register and authenticate new admin
 
 const registerAdmin = asyncHandler(
-    async (req, res, next) => {
+    async (req, res) => {
         const { admin_name: adminName, email, password } = req.body;
         
         const containsSpaces = /\s/.test(adminName);
@@ -54,7 +54,7 @@ const registerAdmin = asyncHandler(
 // desc login and authenticate admin
 
 const loginAdmin = asyncHandler(
-    async (req, res, next) => {
+    async (req, res) => {
         const { email, password } = req.body;
 
         const admin = await Admin.findOne({ email });
