@@ -1,6 +1,5 @@
 const asyncHandler = require("express-async-handler");
 const Payment = require("../models/payment.model");
-const Contestant = require("../models/contestant.model");
 const Season = require("../models/season.model");
 require("dotenv").config();
 
