@@ -67,7 +67,7 @@ app.post(
       // Prevent duplicates
       const existing = await paymentModel.findOne({ reference });
       if (existing) return;
-
+      console.log({ metadata });
       // Find active season
       const season = await seasonModel.findOne({ current: true }).sort({ _id: -1 });
       const seasonId = season?._id || null;
@@ -78,7 +78,13 @@ app.post(
         amount: amount / 100,
         season: seasonId,
         reference,
-        metaData: metadata,
+        metaData: {
+          paymentFor: metadata.paymentFor,
+          name: metadata.name,
+          contestantId: metadata.contestantId,
+          channel: metadata.channel,
+          currency: metadata.currency,
+        },
         status: "success",
         verifiedAt: new Date(),
       });
