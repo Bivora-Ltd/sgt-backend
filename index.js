@@ -100,7 +100,7 @@ app.post(
           break;
 
         case "registration":
-          await axios.post(`${process.env.BASE_URL}/api/v1/contestants/register`, metadata.formData);
+          await axios.post(`${process.env.BASE_URL}/api/v1/contestants/register`, metadata.formDataObj);
           break;
 
         default:
