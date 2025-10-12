@@ -13,7 +13,7 @@ const paymentRoute = express.Router();
 paymentRoute.post(
   "/webhook",
   expressAsyncHandler(async (req, res) => {
-    res.status(200).send("Webhook received");
+    res.sendStatus(200);
 
     const signature = req.headers["x-paystack-signature"];
     const computedSig = crypto
