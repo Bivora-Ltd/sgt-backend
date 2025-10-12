@@ -92,7 +92,7 @@ app.post(
       // Trigger next action
       switch (metadata?.paymentFor) {
         case "voting":
-          await axios.post(`${process.env.BASE_URL}/api/v1/vote`, {
+          await axios.post(`${process.env.BASE_URL}/api/v1/contestants/vote`, {
             contestant: metadata.contestantId,
             streetfood: metadata.foodId,
             qty: metadata.qty,
@@ -100,7 +100,7 @@ app.post(
           break;
 
         case "registration":
-          await axios.post(`${process.env.BASE_URL}/api/v1/contestant/register`, metadata.formData);
+          await axios.post(`${process.env.BASE_URL}/api/v1/contestants/register`, metadata.formData);
           break;
 
         default:
