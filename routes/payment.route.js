@@ -6,7 +6,7 @@ const seasonModel = require("../models/season.model");
 const { default: fetch } = require("node-fetch");
 const checkForMissingFields = require("../middlewares/checkMissingFields");
 const validateToken = require("../middlewares/validateTokenHandler");
-const { recordPayment } = require("../controllers/payment.controller");
+const { recordPayment, history } = require("../controllers/payment.controller");
 
 const paymentRoute = express.Router();
 
