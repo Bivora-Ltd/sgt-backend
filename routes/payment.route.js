@@ -4,6 +4,9 @@ const expressAsyncHandler = require("express-async-handler");
 const paymentModel = require("../models/payment.model");
 const seasonModel = require("../models/season.model");
 const { default: fetch } = require("node-fetch");
+const checkForMissingFields = require("../middlewares/checkMissingFields");
+const validateToken = require("../middlewares/validateTokenHandler");
+const { recordPayment } = require("../controllers/payment.controller");
 
 const paymentRoute = express.Router();
 
