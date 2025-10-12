@@ -12,8 +12,8 @@ const swaggerJsDocs = YAML.load("./utils/swagger.yaml");
 const path = require("path");
 const crypto = require("crypto");
 const expressAsyncHandler = require("express-async-handler");
-const paymentModel = require("../models/payment.model");
-const seasonModel = require("../models/season.model");
+const paymentModel = require("./models/payment.model");
+const seasonModel = require("./models/season.model");
 const { default: fetch } = require("node-fetch");
 const axios = require("axios");
 
