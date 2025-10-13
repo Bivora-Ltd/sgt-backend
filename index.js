@@ -90,21 +90,12 @@ app.post(
       });
 
       // Trigger next action
-      switch (metadata?.paymentFor) {
-        case "voting":
-          await axios.post(`${process.env.BASE_URL}/api/v1/contestants/vote`, {
-            contestant: metadata.contestantId,
-            streetfood: metadata.foodId,
-            qty: metadata.qty,
-          });
-          break;
-
-        case "registration":
-          await axios.post(`${process.env.BASE_URL}/api/v1/contestants/register`, metadata.formData);
-          break;
-
-        default:
-          console.warn("⚠️ Unknown payment type:", metadata?.paymentFor);
+      if (metadata?.paymentFor === "voting") {
+        await axios.post(`${process.env.BASE_URL}/api/v1/contestants/vote`, {
+          contestant: metadata.contestantId,
+          streetfood: metadata.foodId,
+          qty: metadata.qty,
+        });
       }
 
       console.log(`✅ Webhook processed successfully for ${metadata?.paymentFor}`);
